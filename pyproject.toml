@@ -1,0 +1,33 @@
+[project]
+name = "recoveriq"
+version = "0.1.0"
+description = "AI Revenue Recovery Agent"
+authors = [
+    {name = "Harshit", email = "harshit@example.com"}
+]
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic>=2.0",
+    "pydantic-settings",
+    "sqlalchemy",
+    "aiosqlite",
+    "httpx",
+    "python-dotenv",
+    "streamlit",
+    "plotly",
+    "pandas",
+    "rich",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "ruff",
+]
+
+[project.scripts]
+recoveriq = "api.main:app"

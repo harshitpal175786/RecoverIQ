@@ -1,0 +1,74 @@
+[
+  {
+    "scenario_id": "demo_1",
+    "description": "Normal timeout -> retry -> verified success",
+    "transaction": {
+      "id": "txn_demo_timeout_001",
+      "customer_id": "cust_demo_001",
+      "amount": 1999.0,
+      "currency": "INR",
+      "status": "FAILED",
+      "failure_category": "TRANSIENT_DOWNTIME",
+      "failure_reason": "bank_network_timeout",
+      "error_code": "ERR_BANK_NETWORK_TIMEOUT",
+      "bank_name": "HDFC",
+      "upi_psp": "PHONEPE"
+    },
+    "expected_action": "RETRY",
+    "expected_outcome": "SUCCESS"
+  },
+  {
+    "scenario_id": "demo_2",
+    "description": "Alternate method beats retry on expected recovery",
+    "transaction": {
+      "id": "txn_demo_alt_002",
+      "customer_id": "cust_demo_002",
+      "amount": 15000.0,
+      "currency": "INR",
+      "status": "FAILED",
+      "failure_category": "TRANSIENT_DOWNTIME",
+      "failure_reason": "psp_unavailable",
+      "error_code": "ERR_PSP_UNAVAILABLE",
+      "bank_name": "SBI",
+      "upi_psp": "PAYTM",
+      "customer_segment": "high_ltv"
+    },
+    "expected_action": "ROUTE_ALTERNATE",
+    "expected_outcome": "SUCCESS"
+  },
+  {
+    "scenario_id": "demo_3",
+    "description": "Retry limit reached -> guardrail blocks -> escalation",
+    "transaction": {
+      "id": "txn_demo_limit_003",
+      "customer_id": "cust_demo_003",
+      "amount": 499.0,
+      "currency": "INR",
+      "status": "FAILED",
+      "failure_category": "INSUFFICIENT_FUNDS",
+      "failure_reason": "insufficient_funds",
+      "error_code": "ERR_INSUFFICIENT_FUNDS",
+      "bank_name": "ICICI"
+    },
+    "expected_action": "ESCALATE",
+    "expected_outcome": "ESCALATED"
+  },
+  {
+    "scenario_id": "demo_4",
+    "description": "Executor timeout but payment already succeeded -> verifier prevents duplicate",
+    "transaction": {
+      "id": "txn_demo_verify_004",
+      "customer_id": "cust_demo_004",
+      "amount": 2500.0,
+      "currency": "INR",
+      "status": "FAILED",
+      "failure_category": "TRANSIENT_DOWNTIME",
+      "failure_reason": "bank_network_timeout",
+      "error_code": "ERR_BANK_NETWORK_TIMEOUT",
+      "bank_name": "AXIS",
+      "upi_psp": "GPAY"
+    },
+    "expected_action": "VERIFY_STATUS",
+    "expected_outcome": "PREVENTED_DUPLICATE"
+  }
+]
