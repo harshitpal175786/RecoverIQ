@@ -223,56 +223,62 @@ def post_api(endpoint: str, params: Dict = None, json_body: Dict = None) -> Any:
         return {}
 
 
-# --- SIDEBAR NAVIGATION ---
+# --- SIDEBAR: LIVE RAZORPAY INTEGRATION ---
 with st.sidebar:
-    st.markdown("### ⚡ Quick Demo Launcher")
-    st.markdown("Test the 4 core SRS evaluation scenarios:")
-    if st.button("🎯 Run 4 SRS Demo Scenarios", type="primary", use_container_width=True):
-        with st.spinner("Executing 4 SRS Scenarios..."):
+    st.markdown("### 💳 Razorpay Test Mode")
+    st.caption("RecoverIQ is actively listening to your Razorpay Test Dashboard webhooks.")
+
+    # Live Connection Status Box
+    st.markdown("""
+    <div style="background:#F1F5F9; border:1px solid #CBD5E1; border-radius:8px; padding:12px; margin-bottom:16px;">
+        <div style="font-size:12px; color:#475569; font-weight:600;">WEBHOOK LISTENER</div>
+        <div style="font-size:13px; color:#0F172A; font-weight:700; margin-top:2px;">🟢 Active: <code>/webhooks/razorpay</code></div>
+        <div style="font-size:11px; color:#64748B; margin-top:4px;">Events: <code>payment.failed</code>, <code>payment_link.paid</code></div>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Fast Interactive Demo Failure Trigger
+    st.markdown("### 🧪 Quick Test Failure")
+    st.caption("Trigger an instant test failure to see RecoverIQ intercept and recover it:")
+    
+    test_scenario = st.selectbox(
+        "Select Failure Type:",
+        [
+            "1. UPI Bank Timeout (₹1,999)",
+            "2. Degraded UPI ➔ Card Link (₹15,000)",
+            "3. High-Value Payment Escalation (₹65,000)",
+            "4. Recovered Payment (Duplicate Prevention)",
+        ]
+    )
+
+    if st.button("⚡ Trigger Test Failure", type="primary", use_container_width=True):
+        scenario_idx = int(test_scenario[0]) - 1
+        with st.spinner("Intercepting payment failure & running AI recovery..."):
             demo_res = post_api("/demo/scenarios")
             if demo_res and "scenarios" in demo_res:
-                st.session_state["demo_scenarios_results"] = demo_res["scenarios"]
-                st.success("✅ 4 Demo Scenarios Executed!")
+                st.session_state["recent_demo_tx"] = demo_res["scenarios"][scenario_idx]
+                st.success(f"✅ Transaction processed via AI Recovery Agent!")
                 st.rerun()
 
     st.divider()
-    st.markdown("### 🛠️ Batch Operations")
-    seed_count = st.slider("Evaluation Batch Size", min_value=100, max_value=1000, value=500, step=100)
-    use_ai = st.toggle("Enable AI Reasoner", value=True)
+    # Refresh / Sync
+    if st.button("🔄 Refresh Live Dashboard", use_container_width=True):
+        st.rerun()
 
-    col1, col2 = st.columns(2)
-    with col1:
-        if st.button("🌱 Seed Data", use_container_width=True):
-            with st.spinner("Generating batch..."):
-                res = post_api("/seed", params={"count": seed_count, "seed": 42})
-                if res:
-                    st.success(f"Seeded {res.get('count')} records")
-                    st.rerun()
-    with col2:
-        if st.button("🚀 Run Recovery", use_container_width=True):
-            with st.spinner("Processing batch..."):
-                res = post_api("/run", params={"use_ai": str(use_ai).lower(), "batch_size": 100})
-                if res:
-                    st.success(f"Recovered {format_currency(res.get('total_recovered_inr', 0))}")
-                    st.rerun()
-
-    st.divider()
-    # System Status
     health = fetch_api("/health")
     if health:
-        st.caption(f"🟢 **API Status**: Online (v{health.get('version', '0.1.0')})")
-        st.caption("🔗 **Razorpay Test Keys**: Connected")
+        st.caption(f"🟢 **Backend**: Connected (v{health.get('version', '0.1.0')})")
+        st.caption("🔗 **API Key**: `rzp_test_TWqY...`")
     else:
-        st.caption("🔴 **API Offline**")
+        st.caption("🔴 **Backend Offline**")
 
 
 # --- MAIN RAZORPAY DASHBOARD TABS ---
-tab1, tab2, tab3, tab4, tab5 = st.tabs([
+tab1, tab2, tab3, tab4 = st.tabs([
     "📊 Overview & Analytics", 
-    "💳 Transactions", 
-    "⚖️ Baseline vs. AI Uplift", 
-    "🚨 Escalations Queue",
-    "🎯 SRS Demo Scenarios"
+    "💳 Payments & Recovery Logs", 
+    "⚖️ ROI & Baseline Uplift", 
+    "🚨 Human Escalation Desk"
 ])
 
 
@@ -573,39 +579,3 @@ with tab4:
                     st.info(f"**Resolution Notes:** {esc.get('resolution_notes', 'N/A')} (Resolved at: {esc.get('resolved_at')})")
     else:
         st.success("🎉 No pending escalations in queue!")
-
-
-# =========================================================================
-# --- TAB 5: 1-CLICK SRS DEMO SCENARIOS ---
-# =========================================================================
-with tab5:
-    st.markdown("### 🎯 4 Core SRS Demo Scenarios")
-    st.caption("Demonstrate reproducible test edge cases required by the hackathon evaluation.")
-
-    if st.button("🚀 Run All 4 SRS Scenarios", type="primary"):
-        with st.spinner("Executing 4 demo scenarios..."):
-            demo_res = post_api("/demo/scenarios")
-            if demo_res and "scenarios" in demo_res:
-                st.session_state["demo_scenarios_results"] = demo_res["scenarios"]
-                st.success("✅ 4 Demo Scenarios Executed Successfully!")
-
-    if "demo_scenarios_results" in st.session_state and st.session_state["demo_scenarios_results"]:
-        scs = st.session_state["demo_scenarios_results"]
-        for sc in scs:
-            st.markdown(f"""
-            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:16px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="margin:0; color:#0F172A; font-size:15px;">{sc.get('title')}</h4>
-                    {get_status_badge(sc.get('verification_status'))}
-                </div>
-                <p style="color:#64748B; margin: 4px 0 10px 0; font-size:13px;">{sc.get('description')}</p>
-                <div style="font-size:13px; line-height:1.6; background:#F8FAFC; border:1px solid #E2E8F0; padding:10px; border-radius:6px;">
-                    <b>Transaction ID:</b> <code>{sc.get('transaction_id')}</code> | <b>Amount:</b> {format_currency(sc.get('amount_inr'))} <br/>
-                    <b>Expected Action:</b> <code>{sc.get('expected_action')}</code> | <b>AI Decision:</b> <code style="color:#0066FF;">{sc.get('actual_action')}</code> (Confidence: {sc.get('confidence_score'):.0%})<br/>
-                    <b>Guardrail Check:</b> {'✅ Passed' if sc.get('guardrail_passed') else f"<span style='color:#D97706;'>🛑 Modified ({', '.join(sc.get('guardrail_modifications', []))})</span>"}<br/>
-                    <b>AI Reasoner Trace:</b> <i>"{sc.get('reasoning')}"</i>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-    else:
-        st.info("Click **'Run All 4 SRS Scenarios'** above to execute the demonstration.")
