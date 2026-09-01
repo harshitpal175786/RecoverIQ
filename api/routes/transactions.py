@@ -27,16 +27,16 @@ async def get_transaction_detail(transaction_id: str = Path(...)):
         if not tx:
             raise HTTPException(status_code=404, detail="Transaction not found")
             
-        all_attempts = await get_recovery_attempts()
-        tx_attempts = [a for a in all_attempts if getattr(a, 'transaction_id', None) == transaction_id]
-        
-        all_logs = await get_audit_logs()
-        tx_logs = [log for log in all_logs if getattr(log, 'transaction_id', None) == transaction_id]
+        tx_attempts = await get_recovery_attempts(transaction_id)
+        tx_logs = await get_audit_logs(transaction_id)
         
         return {
             "transaction": tx,
             "recovery_attempts": tx_attempts,
             "audit_logs": tx_logs
         }
+    except HTTPException:
+        raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+

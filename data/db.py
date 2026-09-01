@@ -311,3 +311,16 @@ async def get_escalations(resolved: bool = None) -> List[EscalationRecordModel]:
 async def get_escalations_unresolved() -> List[EscalationRecordModel]:
     """Get unresolved escalation records."""
     return await get_escalations(resolved=False)
+
+
+async def resolve_escalation(escalation_id: str, resolution_notes: str = "") -> bool:
+    """Mark an escalation as resolved with human reviewer notes."""
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(
+            update(EscalationRecordModel)
+            .where(EscalationRecordModel.escalation_id == escalation_id)
+            .values(resolved=True, resolved_at=datetime.utcnow(), resolution_notes=resolution_notes)
+        )
+        await session.commit()
+        return result.rowcount > 0
+

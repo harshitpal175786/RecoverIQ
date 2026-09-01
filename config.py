@@ -1,18 +1,34 @@
+from enum import Enum
 from functools import lru_cache
 from typing import List, Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
+class AIProvider(str, Enum):
+    AUTO = "AUTO"             # Try Ollama first; if offline/fails, use OpenRouter, then deterministic fallback
+    OLLAMA = "OLLAMA"         # Strictly local Ollama
+    OPENROUTER = "OPENROUTER" # Hosted OpenRouter API
+    MOCK = "MOCK"             # Fast deterministic mock
+
+
 class Settings(BaseSettings):
     """Application settings."""
 
-    # OpenRouter / LLM
+    # AI Provider
+    AI_PROVIDER: AIProvider = AIProvider.AUTO
+
+    # Local Ollama (Zero-Budget Primary Path)
+    OLLAMA_BASE_URL: str = "http://localhost:11434"
+    OLLAMA_MODEL: str = "qwen2.5:3b"
+
+    # OpenRouter / Hosted LLM
     OPENROUTER_API_KEY: str = "your_key_here"
-    OPENROUTER_MODEL: str = "google/gemini-2.0-flash-exp:free"
-    OPENROUTER_FALLBACK_MODELS: str = "deepseek/deepseek-chat,meta-llama/llama-3.3-70b-instruct:free"
+    OPENROUTER_MODEL: str = "minimax/minimax-m3:free"
+    OPENROUTER_FALLBACK_MODELS: str = "google/gemini-2.0-flash-exp:free,deepseek/deepseek-chat:free"
+    OPENROUTER_REASONING: bool = True  # Enable MiniMax M3 reasoning mode
     LLM_CONFIDENCE_THRESHOLD: float = 0.6
-    LLM_TIMEOUT_SECONDS: int = 30
+    LLM_TIMEOUT_SECONDS: int = 5
 
     # Razorpay
     RAZORPAY_KEY_ID: str = "rzp_test_xxx"

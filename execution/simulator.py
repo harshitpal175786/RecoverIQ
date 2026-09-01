@@ -10,16 +10,26 @@ class SimulatorExecutor:
     def __init__(self, seed: int = 42):
         self.rng = random.Random(seed)
         
-        # Probabilities by (FailureCategory, RecoveryAction)
+        # Realistic recovery probabilities by (FailureCategory, RecoveryAction)
         self.success_probabilities = {
             (FailureCategory.TRANSIENT_DOWNTIME, RecoveryAction.RETRY): 0.75,
-            (FailureCategory.TRANSIENT_DOWNTIME, RecoveryAction.ALTERNATE_METHOD): 0.60,
-            (FailureCategory.INSUFFICIENT_FUNDS, RecoveryAction.DELAY_AND_RETRY): 0.55,
-            (FailureCategory.INSUFFICIENT_FUNDS, RecoveryAction.PAYMENT_LINK): 0.45,
-            (FailureCategory.USER_DROPOUT, RecoveryAction.PAYMENT_LINK): 0.50,
+            (FailureCategory.TRANSIENT_DOWNTIME, RecoveryAction.DELAY_AND_RETRY): 0.80,
+            (FailureCategory.TRANSIENT_DOWNTIME, RecoveryAction.ALTERNATE_METHOD): 0.65,
+            (FailureCategory.INSUFFICIENT_FUNDS, RecoveryAction.DELAY_AND_RETRY): 0.65,
+            (FailureCategory.INSUFFICIENT_FUNDS, RecoveryAction.PAYMENT_LINK): 0.50,
+            (FailureCategory.INSUFFICIENT_FUNDS, RecoveryAction.RETRY): 0.15,
+            (FailureCategory.USER_DROPOUT, RecoveryAction.PAYMENT_LINK): 0.60,
+            (FailureCategory.USER_DROPOUT, RecoveryAction.DELAY_AND_RETRY): 0.55,
+            (FailureCategory.USER_DROPOUT, RecoveryAction.ALTERNATE_METHOD): 0.55,
             (FailureCategory.USER_DROPOUT, RecoveryAction.RETRY): 0.20,
-            (FailureCategory.MANDATE_ISSUE, RecoveryAction.PAYMENT_LINK): 0.35,
-            (FailureCategory.LIMIT_EXCEEDED, RecoveryAction.ALTERNATE_METHOD): 0.65,
+            (FailureCategory.MANDATE_ISSUE, RecoveryAction.PAYMENT_LINK): 0.55,
+            (FailureCategory.MANDATE_ISSUE, RecoveryAction.ALTERNATE_METHOD): 0.60,
+            (FailureCategory.MANDATE_ISSUE, RecoveryAction.DELAY_AND_RETRY): 0.50,
+            (FailureCategory.MANDATE_ISSUE, RecoveryAction.RETRY): 0.10,
+            (FailureCategory.LIMIT_EXCEEDED, RecoveryAction.ALTERNATE_METHOD): 0.70,
+            (FailureCategory.LIMIT_EXCEEDED, RecoveryAction.DELAY_AND_RETRY): 0.65,
+            (FailureCategory.LIMIT_EXCEEDED, RecoveryAction.PAYMENT_LINK): 0.55,
+            (FailureCategory.LIMIT_EXCEEDED, RecoveryAction.RETRY): 0.10,
         }
 
     async def execute(self, transaction: Transaction, action: RecoveryAction, retry_delay_minutes: int = 0) -> RecoveryAttempt:

@@ -29,7 +29,7 @@ class RecoveryPipeline:
             duration_ms=float(int((time.time() - start_time) * 1000))
         )
 
-    async def process_transaction(self, transaction: Transaction) -> tuple[Optional[AgentDecision], Optional[GuardrailResult], list[AuditLog]]:
+    async def process_transaction(self, transaction: Transaction, use_ai: bool = True) -> tuple[Optional[AgentDecision], Optional[GuardrailResult], list[AuditLog]]:
         """Process a single transaction through the full recovery pipeline."""
         audit_logs = []
         
@@ -75,10 +75,14 @@ class RecoveryPipeline:
         t2 = time.time()
         decision = None
         used_fallback = False
-        try:
-            decision = await self.reasoner.reason(transaction, context)
-        except Exception as e:
-            print(f"AI Reasoner failed: {e}. Falling back to deterministic rules.")
+        if use_ai:
+            try:
+                decision = await self.reasoner.reason(transaction, context)
+            except Exception as e:
+                print(f"AI Reasoner failed: {e}. Falling back to deterministic rules.")
+                decision = deterministic_decision(transaction, context)
+                used_fallback = True
+        else:
             decision = deterministic_decision(transaction, context)
             used_fallback = True
             

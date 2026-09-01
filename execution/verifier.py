@@ -11,8 +11,15 @@ class ActionVerifier:
         
     async def verify(self, transaction: Transaction, attempt: RecoveryAttempt) -> RecoveryAttempt:
         """Verify the outcome of a recovery attempt."""
+        from schemas.decision import RecoveryAction
         
-        if attempt.success:
+        if attempt.action == RecoveryAction.NO_ACTION:
+            attempt.verification_status = "VERIFIED_SUCCESS"
+            attempt.outcome_details = "Verified safe: Duplicate action prevented on settled transaction."
+        elif attempt.action == RecoveryAction.ESCALATE:
+            attempt.verification_status = "VERIFIED_SUCCESS"
+            attempt.outcome_details = "Verified compliant: Routed to human review queue."
+        elif attempt.success:
             attempt.verification_status = "VERIFIED_SUCCESS"
         else:
             # 5% chance of false negative (race condition)

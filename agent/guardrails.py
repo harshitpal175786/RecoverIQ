@@ -55,12 +55,11 @@ def enforce_guardrails(transaction: Transaction, decision: AgentDecision, policy
     else:
         passed.append("Confidence check")
         
-    # 12. Quiet hours
+    # 12. Quiet hours (TRAI 9 PM - 8 AM IST)
     current_hour = datetime.now().hour
     is_quiet_hour = current_hour >= settings.QUIET_HOURS_START or current_hour < settings.QUIET_HOURS_END
-    if is_quiet_hour and decision.communication_channel and decision.communication_channel != "NONE":
+    if is_quiet_hour and decision.communication_channel and decision.communication_channel != "NONE" and modified_action not in [RecoveryAction.NO_ACTION, RecoveryAction.ESCALATE]:
         blocked.append("Quiet hours communication delayed")
-        # Could change to DELAY_AND_RETRY or NO_ACTION depending on strictness
         modified_action = RecoveryAction.DELAY_AND_RETRY
         decision.retry_delay_minutes = (24 - current_hour + settings.QUIET_HOURS_END) * 60
     else:
