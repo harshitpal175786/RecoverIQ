@@ -19,13 +19,14 @@ class RecoveryPipeline:
         self.settings = get_settings()
         self.policy = MerchantPolicy()
     
-    def _create_audit_log(self, stage: AuditStage, input_data: dict, output_data: dict, start_time: float) -> AuditLog:
+    def _create_audit_log(self, transaction_id: str, stage: AuditStage, input_data: dict, output_data: dict, start_time: float) -> AuditLog:
         return AuditLog(
-            id=str(uuid.uuid4()),
+            log_id=str(uuid.uuid4()),
+            transaction_id=transaction_id,
             stage=stage,
             input_data=input_data,
             output_data=output_data,
-            duration_ms=int((time.time() - start_time) * 1000)
+            duration_ms=float(int((time.time() - start_time) * 1000))
         )
 
     async def process_transaction(self, transaction: Transaction) -> tuple[Optional[AgentDecision], Optional[GuardrailResult], list[AuditLog]]:
@@ -33,36 +34,39 @@ class RecoveryPipeline:
         audit_logs = []
         
         # Check duplicate
-        if is_duplicate(transaction.id):
+        if is_duplicate(transaction.transaction_id):
             return None, None, []
-        mark_processed(transaction.id)
+        mark_processed(transaction.transaction_id)
 
         # Stage 1: Risk Detection
         t0 = time.time()
         is_fatal, risk_score, risk_reason = detect_risk(transaction)
         audit_logs.append(self._create_audit_log(
+            transaction.transaction_id,
             AuditStage.RISK_DETECTION,
-            {"transaction_id": transaction.id},
+            {"transaction_id": transaction.transaction_id},
             {"is_fatal": is_fatal, "risk_score": risk_score, "reason": risk_reason},
             t0
         ))
         
         if is_fatal:
             decision = AgentDecision(
+                transaction_id=transaction.transaction_id,
                 root_cause_analysis=risk_reason,
                 recommended_action=RecoveryAction.NO_ACTION,
                 confidence_score=1.0,
                 risk_assessment="Fatal",
                 reasoning="Fatal failure detected in risk stage."
             )
-            return decision, GuardrailResult(passed_checks=[], blocked_checks=[], modified_action=decision.recommended_action, original_action=decision.recommended_action), audit_logs
+            return decision, GuardrailResult(passed=True, checks_applied=[], checks_blocked=[], final_action=decision.recommended_action, original_action=decision.recommended_action, modifications=[]), audit_logs
 
         # Stage 2: Context Building  
         t1 = time.time()
         context = build_context(transaction)
         audit_logs.append(self._create_audit_log(
+            transaction.transaction_id,
             AuditStage.CONTEXT_BUILDING,
-            {"transaction_id": transaction.id},
+            {"transaction_id": transaction.transaction_id},
             context,
             t1
         ))
@@ -79,8 +83,9 @@ class RecoveryPipeline:
             used_fallback = True
             
         audit_logs.append(self._create_audit_log(
-            AuditStage.REASONING,
-            {"transaction_id": transaction.id, "context": context},
+            transaction.transaction_id,
+            AuditStage.AI_REASONING,
+            {"transaction_id": transaction.transaction_id, "context": context},
             {"decision": decision.model_dump(), "used_fallback": used_fallback},
             t2
         ))
@@ -88,10 +93,11 @@ class RecoveryPipeline:
         # Stage 4: Guardrail Enforcement
         t3 = time.time()
         guardrail_result = enforce_guardrails(transaction, decision, self.policy)
-        decision.recommended_action = guardrail_result.modified_action
+        decision.recommended_action = guardrail_result.final_action
         
         audit_logs.append(self._create_audit_log(
-            AuditStage.GUARDRAILS,
+            transaction.transaction_id,
+            AuditStage.GUARDRAIL_CHECK,
             {"decision": decision.model_dump()},
             {"result": guardrail_result.model_dump()},
             t3

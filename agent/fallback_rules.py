@@ -6,6 +6,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
     
     if transaction.attempt_count >= 2:
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="Max retries reached.",
             recommended_action=RecoveryAction.ESCALATE,
             confidence_score=0.95,
@@ -14,11 +16,13 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
         )
 
     cat = transaction.failure_category
-    amount = transaction.amount
-    customer_name = getattr(transaction, 'customer_id', 'Customer') # fallback
+    amount = transaction.amount_inr
+    customer_name = getattr(transaction, 'customer_name', 'Customer')
     
     if cat == FailureCategory.TRANSIENT_DOWNTIME:
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="Transient network/bank downtime.",
             recommended_action=RecoveryAction.RETRY,
             retry_delay_minutes=15,
@@ -28,6 +32,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
         )
     elif cat == FailureCategory.INSUFFICIENT_FUNDS:
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="Insufficient funds.",
             recommended_action=RecoveryAction.DELAY_AND_RETRY,
             retry_delay_minutes=1440,
@@ -39,6 +45,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
         )
     elif cat == FailureCategory.USER_DROPOUT:
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="User abandoned transaction.",
             recommended_action=RecoveryAction.PAYMENT_LINK,
             retry_delay_minutes=5,
@@ -50,6 +58,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
         )
     elif cat == FailureCategory.MANDATE_ISSUE:
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="Mandate validation failed.",
             recommended_action=RecoveryAction.PAYMENT_LINK,
             communication_channel="EMAIL",
@@ -59,6 +69,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
         )
     elif cat == FailureCategory.LIMIT_EXCEEDED:
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="Transaction limit exceeded.",
             recommended_action=RecoveryAction.ALTERNATE_METHOD,
             communication_channel="WHATSAPP",
@@ -70,6 +82,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
     elif cat == FailureCategory.FATAL_DECLINE:
         action = RecoveryAction.ESCALATE if amount > 50000 else RecoveryAction.NO_ACTION
         return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
             root_cause_analysis="Fatal decline by issuer.",
             recommended_action=action,
             confidence_score=0.90,
@@ -79,6 +93,8 @@ def deterministic_decision(transaction: Transaction, context: dict) -> AgentDeci
     
     # Default fallback
     return AgentDecision(
+            transaction_id=transaction.transaction_id,
+            is_fallback=True,
         root_cause_analysis="Unknown failure.",
         recommended_action=RecoveryAction.ESCALATE,
         confidence_score=1.0,

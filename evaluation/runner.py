@@ -5,18 +5,7 @@ from execution.simulator import SimulatorExecutor
 from execution.verifier import ActionVerifier
 from evaluation.baseline import BaselineStrategy
 from evaluation.metrics import compute_metrics, compute_comparison
-
-class RecoveryPipeline:
-    """Dummy pipeline to avoid circular imports. Replace with actual pipeline."""
-    async def process(self, transaction):
-        # Return mock decision and guardrail for now
-        from schemas.decision import AgentDecision, RecoveryAction, GuardrailResult
-        return AgentDecision(
-            transaction_id=transaction.transaction_id,
-            recommended_action=RecoveryAction.RETRY,
-            confidence_score=0.9,
-            reasoning="Mock reasoning"
-        ), GuardrailResult(is_safe=True)
+from agent.pipeline import RecoveryPipeline
 
 class EvaluationRunner:
     """Batch evaluation runner."""
@@ -34,7 +23,7 @@ class EvaluationRunner:
         decisions = []
         
         for tx in transactions:
-            decision, guardrail = await self.pipeline.process(tx)
+            decision, guardrail, audit_logs = await self.pipeline.process_transaction(tx)
             decisions.append(decision)
             
             attempt = await self.simulator.execute(tx, decision.recommended_action)

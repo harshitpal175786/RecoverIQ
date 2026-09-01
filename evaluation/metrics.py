@@ -17,10 +17,10 @@ def compute_metrics(batch_id: str, strategy: str, transactions: list[Transaction
         )
         
     total_failed_amount = sum(t.amount_inr for t in transactions)
-    recovered_amount = sum(a.amount_recovered for a in attempts if a.is_success)
+    recovered_amount = sum(a.amount_recovered_inr for a in attempts if a.success)
     
     attempted = len(attempts)
-    successful = sum(1 for a in attempts if a.is_success)
+    successful = sum(1 for a in attempts if a.success)
     
     recovery_rate = (successful / total_tx) * 100 if total_tx else 0.0
     

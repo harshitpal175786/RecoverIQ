@@ -22,7 +22,7 @@ async def seed_data(
         await save_transactions_batch(transactions)
         
         batch_id = str(uuid.uuid4())
-        total_amount = sum(t.amount for t in transactions)
+        total_amount = sum(t.amount_inr for t in transactions)
         
         return SeedResponse(
             batch_id=batch_id,

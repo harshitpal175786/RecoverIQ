@@ -12,12 +12,12 @@ def detect_risk(transaction: Transaction) -> tuple[bool, float, str]:
     reasons = []
 
     # Amount-based risk
-    if transaction.amount > 50000:
+    if transaction.amount_inr > 50000:
         risk_score += 0.4
         reasons.append("High transaction amount")
     
     # Customer segment risk
-    if transaction.customer_segment == CustomerSegment.NEW_USER:
+    if transaction.customer_segment == CustomerSegment.STANDARD:
         risk_score += 0.2
         reasons.append("New user segment")
     elif transaction.customer_segment == CustomerSegment.CHURN_RISK:

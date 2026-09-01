@@ -12,13 +12,13 @@ class ActionVerifier:
     async def verify(self, transaction: Transaction, attempt: RecoveryAttempt) -> RecoveryAttempt:
         """Verify the outcome of a recovery attempt."""
         
-        if attempt.is_success:
+        if attempt.success:
             attempt.verification_status = "VERIFIED_SUCCESS"
         else:
             # 5% chance of false negative (race condition)
             if self.rng.random() < 0.05:
-                attempt.is_success = True
-                attempt.amount_recovered = transaction.amount_inr
+                attempt.success = True
+                attempt.amount_recovered_inr = transaction.amount_inr
                 attempt.verification_status = "VERIFIED_SUCCESS"
                 attempt.outcome_details += " (Recovered via race condition handling)"
             else:

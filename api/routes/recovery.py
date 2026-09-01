@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Query, HTTPException, Path
-from schemas.transaction import TransactionStatus
+from schemas.transaction import TransactionStatus, Transaction
 from data.db import (
     get_all_transactions,
     get_transaction,
@@ -34,23 +34,25 @@ async def run_recovery(
         escalated = 0
         total_recovered_inr = 0.0
         
-        for tx in failed_tx:
-            decision, guardrail_result, audit_logs = pipeline.process_transaction(tx)
+        for tx_model in failed_tx:
+            # Convert SQLAlchemy model to Pydantic model
+            tx = Transaction.model_validate(tx_model, from_attributes=True)
+            decision, guardrail_result, audit_logs = await pipeline.process_transaction(tx)
             
             for log in audit_logs:
                 await save_audit_log(log)
             
-            attempt = simulator.execute(tx, decision.action, retry_delay=0)
-            verified_attempt = verifier.verify(tx, attempt)
+            attempt = await simulator.execute(tx, decision.recommended_action, retry_delay_minutes=0)
+            verified_attempt = await verifier.verify(tx, attempt)
             
             await save_recovery_attempt(verified_attempt)
             
             if verified_attempt.success:
-                await update_transaction_status(tx.transaction_id, TransactionStatus.RECOVERED)
+                await update_transaction_status(tx.transaction_id, TransactionStatus.RECOVERED.value)
                 recovered += 1
-                total_recovered_inr += tx.amount
-            elif getattr(decision.action, 'type', '') == "escalate" or getattr(decision.action, 'name', '') == "escalate":
-                await update_transaction_status(tx.transaction_id, TransactionStatus.ESCALATED)
+                total_recovered_inr += tx.amount_inr
+            elif getattr(decision.recommended_action, 'type', '') == "escalate" or getattr(decision.recommended_action, 'name', '') == "escalate":
+                await update_transaction_status(tx.transaction_id, TransactionStatus.ESCALATED.value)
                 escalated += 1
                 
             processed += 1
@@ -64,29 +66,32 @@ async def run_recovery(
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+from schemas.transaction import TransactionStatus, Transaction
+
 @router.post("/recovery/{transaction_id}/execute")
 async def execute_recovery(transaction_id: str = Path(...)):
     try:
-        tx = await get_transaction(transaction_id)
-        if not tx:
+        tx_model = await get_transaction(transaction_id)
+        if not tx_model:
             raise HTTPException(status_code=404, detail="Transaction not found")
             
+        tx = Transaction.model_validate(tx_model, from_attributes=True)
         pipeline = RecoveryPipeline()
         simulator = SimulatorExecutor()
         verifier = ActionVerifier()
         
-        decision, guardrail_result, audit_logs = pipeline.process_transaction(tx)
+        decision, guardrail_result, audit_logs = await pipeline.process_transaction(tx)
         
         for log in audit_logs:
             await save_audit_log(log)
             
-        attempt = simulator.execute(tx, decision.action, retry_delay=0)
-        verified_attempt = verifier.verify(tx, attempt)
+        attempt = await simulator.execute(tx, decision.recommended_action, retry_delay_minutes=0)
+        verified_attempt = await verifier.verify(tx, attempt)
         
         await save_recovery_attempt(verified_attempt)
         
         if verified_attempt.success:
-            await update_transaction_status(tx.transaction_id, TransactionStatus.RECOVERED)
+            await update_transaction_status(tx.transaction_id, TransactionStatus.RECOVERED.value)
         
         return {
             "transaction_id": transaction_id,

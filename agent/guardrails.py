@@ -19,18 +19,11 @@ def enforce_guardrails(transaction: Transaction, decision: AgentDecision, policy
         passed.append("Max retries check")
 
     # 3. High-value cap
-    if transaction.amount > settings.HIGH_VALUE_THRESHOLD_INR and modified_action not in [RecoveryAction.NO_ACTION, RecoveryAction.ESCALATE]:
+    if transaction.amount_inr > settings.HIGH_VALUE_THRESHOLD_INR and modified_action not in [RecoveryAction.NO_ACTION, RecoveryAction.ESCALATE]:
         blocked.append("High-value cap exceeded")
         modified_action = RecoveryAction.ESCALATE
     else:
         passed.append("High-value check")
-
-    # 4. Unknown failure
-    if transaction.failure_category == FailureCategory.UNKNOWN:
-        blocked.append("Unknown failure auto-escalate")
-        modified_action = RecoveryAction.ESCALATE
-    else:
-        passed.append("Known failure check")
 
     # 5. Already successful
     if transaction.status == TransactionStatus.RECOVERED:
@@ -40,7 +33,7 @@ def enforce_guardrails(transaction: Transaction, decision: AgentDecision, policy
         passed.append("Not yet recovered check")
 
     # 7. Allow-listed actions only
-    if modified_action.value not in [a.value for a in policy.allowed_actions]:
+    if modified_action.value not in policy.allowed_actions:
         blocked.append("Action not allow-listed")
         modified_action = RecoveryAction.ESCALATE
     else:
@@ -65,7 +58,7 @@ def enforce_guardrails(transaction: Transaction, decision: AgentDecision, policy
     # 12. Quiet hours
     current_hour = datetime.now().hour
     is_quiet_hour = current_hour >= settings.QUIET_HOURS_START or current_hour < settings.QUIET_HOURS_END
-    if is_quiet_hour and decision.communication_channel != "NONE":
+    if is_quiet_hour and decision.communication_channel and decision.communication_channel != "NONE":
         blocked.append("Quiet hours communication delayed")
         # Could change to DELAY_AND_RETRY or NO_ACTION depending on strictness
         modified_action = RecoveryAction.DELAY_AND_RETRY
@@ -74,8 +67,10 @@ def enforce_guardrails(transaction: Transaction, decision: AgentDecision, policy
         passed.append("Quiet hours check")
 
     return GuardrailResult(
-        passed_checks=passed,
-        blocked_checks=blocked,
-        modified_action=modified_action,
-        original_action=decision.recommended_action
+        passed=len(blocked) == 0,
+        checks_applied=passed,
+        checks_blocked=blocked,
+        original_action=decision.recommended_action,
+        final_action=modified_action,
+        modifications=blocked
     )

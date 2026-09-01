@@ -44,8 +44,8 @@ class SimulatorExecutor:
             attempt_id=str(uuid.uuid4()),
             transaction_id=transaction.transaction_id,
             action=action,
-            is_success=is_success,
-            amount_recovered=amount_recovered,
+            success=is_success,
+            amount_recovered_inr=amount_recovered,
             outcome_details=outcome_details,
-            attempted_at=datetime.now(timezone.utc)
+            executed_at=datetime.now(timezone.utc)
         )
