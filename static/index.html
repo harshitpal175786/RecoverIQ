@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Dashboard | RecoverIQ</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+    <!-- TOP NAVIGATION BAR -->
+    <header class="rzp-topbar">
+        <div class="topbar-left">
+            <div class="rzp-logo">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3395FF"/>
+                    <path d="M2 17L12 22L22 17" stroke="#3395FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M2 12L12 17L22 12" stroke="#3395FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span>Razorpay</span>
+            </div>
+            <nav class="topbar-nav">
+                <a href="#" class="nav-item active">Payments</a>
+                <a href="#" class="nav-item">Banking+</a>
+                <a href="#" class="nav-item">Payroll</a>
+                <a href="#" class="nav-item">More</a>
+            </nav>
+        </div>
+        <div class="topbar-center">
+            <div class="test-mode-toggle">
+                <span class="toggle-dot"></span>
+                <span class="toggle-text">TEST MODE</span>
+            </div>
+        </div>
+        <div class="topbar-right">
+            <div class="search-box">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                <input type="text" placeholder="Search payments, transactions, customers...">
+            </div>
+            <div class="badge-track">Track 03 • AI Revenue Recovery</div>
+            <div class="user-avatar" title="Harshit Pal">HP</div>
+        </div>
+    </header>
+
+    <!-- APP CONTAINER -->
+    <div class="app-layout">
+        <!-- SIDEBAR -->
+        <aside class="rzp-sidebar">
+            <div class="sidebar-section">
+                <div class="section-title">RECOVERIQ SUITE</div>
+                <button class="side-link active" data-view="overview">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+                    <span>Overview</span>
+                </button>
+                <button class="side-link" data-view="transactions">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>
+                    <span>Payments & Recovery</span>
+                </button>
+                <button class="side-link" data-view="benchmark">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+                    <span>ROI & Baseline Uplift</span>
+                </button>
+                <button class="side-link" data-view="escalations">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    <span>Escalations Queue</span>
+                    <span class="badge-pill" id="escCountBadge">0</span>
+                </button>
+            </div>
+
+            <div class="sidebar-section">
+                <div class="section-title">CONFIGURATION</div>
+                <button class="side-link" data-view="settings">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+                    <span>Settings & Webhooks</span>
+                </button>
+            </div>
+
+            <!-- Quick Trigger Widget in Sidebar -->
+            <div class="sidebar-widget">
+                <div class="widget-title">⚡ Test Failure Intercept</div>
+                <p class="widget-sub">Trigger an instant test failure to test real-time AI recovery:</p>
+                <select id="quickScenarioSelect" class="rzp-select">
+                    <option value="0">1. Bank Timeout (₹1,999)</option>
+                    <option value="1">2. Degraded UPI ➔ Card Link (₹15,000)</option>
+                    <option value="2">3. Retry Limit ➔ Escalation (₹65,000)</option>
+                    <option value="3">4. Settled (Duplicate Safe)</option>
+                </select>
+                <button id="btnTriggerTest" class="rzp-btn rzp-btn-primary btn-block">
+                    <span>⚡ Intercept & Recover</span>
+                </button>
+            </div>
+            
+            <div class="sidebar-footer">
+                <div class="footer-status">
+                    <span class="status-dot"></span>
+                    <span>Razorpay API Connected</span>
+                </div>
+            </div>
+        </aside>
+
+        <!-- MAIN CANVAS -->
+        <main class="rzp-main">
+            <!-- VIEW 1: OVERVIEW -->
+            <section id="view-overview" class="view-panel active">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Hey Harshit, welcome to RecoverIQ</h1>
+                        <p class="page-subtitle">Real-time revenue protection and autonomous failure recovery across your payment channels.</p>
+                    </div>
+                    <div class="header-actions">
+                        <button id="btnRefresh" class="rzp-btn rzp-btn-outline">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+                            <span>Sync Data</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 HERO KPI CARDS -->
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Failed Volume at Risk</span>
+                            <span class="kpi-icon danger">⚠️</span>
+                        </div>
+                        <div class="kpi-value" id="kpiFailedAmount">₹0.00</div>
+                        <div class="kpi-footer" id="kpiFailedCount">0 failed transactions</div>
+                    </div>
+
+                    <div class="kpi-card highlight-success">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Recovered Revenue</span>
+                            <span class="kpi-icon success">💰</span>
+                        </div>
+                        <div class="kpi-value text-success" id="kpiRecoveredAmount">+₹0.00</div>
+                        <div class="kpi-footer text-success" id="kpiRecoveredCount">0 transactions won back</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Recovery Success Rate</span>
+                            <span class="kpi-icon info">📈</span>
+                        </div>
+                        <div class="kpi-value text-primary" id="kpiRecoveryRate">0.0%</div>
+                        <div class="kpi-footer" id="kpiRateSub">0 of 0 recovered</div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Guardrail Compliance</span>
+                            <span class="kpi-icon warning">🛡️</span>
+                        </div>
+                        <div class="kpi-value text-warning" id="kpiCompliance">100%</div>
+                        <div class="kpi-footer" id="kpiEscalatedCount">0 held for human review</div>
+                    </div>
+                </div>
+
+                <!-- CHARTS ROW -->
+                <div class="charts-grid">
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>🎯 Recovery Action Breakdown</h3>
+                            <span class="chart-sub">Optimal bounded actions determined by AI Reasoner</span>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="actionsChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="chart-card">
+                        <div class="chart-header">
+                            <h3>🔍 Failure Root-Causes</h3>
+                            <span class="chart-sub">Diagnosed failure categories across UPI, Cards & Netbanking</span>
+                        </div>
+                        <div class="chart-body">
+                            <canvas id="failureChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 2: TRANSACTIONS & LOGS -->
+            <section id="view-transactions" class="view-panel">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Payments & Recovery Logs</h1>
+                        <p class="page-subtitle">Inspect individual transactions, AI root-cause diagnoses, and customer notifications.</p>
+                    </div>
+                </div>
+
+                <!-- FILTERS BAR -->
+                <div class="table-filters">
+                    <div class="filter-search">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#64748B" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="txSearchInput" placeholder="Filter by transaction ID, customer...">
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="txStatusFilter" class="rzp-select">
+                            <option value="ALL">All Statuses</option>
+                            <option value="FAILED">Failed</option>
+                            <option value="RECOVERED">Recovered</option>
+                            <option value="ESCALATED">Escalated</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- TRANSACTIONS TABLE -->
+                <div class="table-container">
+                    <table class="rzp-table" id="txTable">
+                        <thead>
+                            <tr>
+                                <th>Transaction ID</th>
+                                <th>Customer</th>
+                                <th>Amount</th>
+                                <th>Method & Bank</th>
+                                <th>Failure Reason</th>
+                                <th>Recovery Action</th>
+                                <th>Status</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="txTableBody">
+                            <tr><td colspan="8" class="text-center py-4">Loading payment records...</td></tr>
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- VIEW 3: ROI & BASELINE UPLIFT -->
+            <section id="view-benchmark" class="view-panel">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Scientific Benchmark: Baseline vs. RecoverIQ</h1>
+                        <p class="page-subtitle">Empirical comparison proving measured revenue won back over traditional naive single-retries.</p>
+                    </div>
+                    <div class="header-actions">
+                        <button id="btnRunBenchmark" class="rzp-btn rzp-btn-primary">
+                            <span>⚖️ Run Side-by-Side Benchmark (50 Txns)</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div id="benchmarkBanner" class="benchmark-banner" style="display:none;">
+                    <div class="banner-title" id="bmSummaryTitle">🏆 Net Uplift: +₹20,074.91 (+45.4%)</div>
+                    <div class="banner-desc" id="bmSummaryText">RecoverIQ recovered 36% vs Baseline 18%.</div>
+                </div>
+
+                <div class="kpi-grid" id="bmCardsGrid" style="display:none;">
+                    <div class="kpi-card">
+                        <div class="kpi-label">Naive Baseline Recovery</div>
+                        <div class="kpi-value text-muted" id="bmBaselineRate">18.0%</div>
+                        <div class="kpi-footer" id="bmBaselineAmt">₹44,224.94</div>
+                    </div>
+                    <div class="kpi-card highlight-success">
+                        <div class="kpi-label">RecoverIQ AI Recovery</div>
+                        <div class="kpi-value text-success" id="bmRiqRate">36.0%</div>
+                        <div class="kpi-footer text-success" id="bmRiqAmt">₹64,299.85</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">Net Revenue Uplift</div>
+                        <div class="kpi-value text-primary" id="bmUpliftRev">+₹20,074.91</div>
+                        <div class="kpi-footer" id="bmUpliftRate">+18.0pp recovery rate</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">False-Action Reduction</div>
+                        <div class="kpi-value text-warning" id="bmFalseAction">85.0%</div>
+                        <div class="kpi-footer">Eliminates wasted retries & spam</div>
+                    </div>
+                </div>
+
+                <div class="charts-grid" id="bmChartsGrid" style="display:none;">
+                    <div class="chart-card">
+                        <div class="chart-header"><h3>Recovery Rate Comparison (%)</h3></div>
+                        <div class="chart-body"><canvas id="bmRateChart"></canvas></div>
+                    </div>
+                    <div class="chart-card">
+                        <div class="chart-header"><h3>Recovered Revenue Comparison (₹)</h3></div>
+                        <div class="chart-body"><canvas id="bmRevChart"></canvas></div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- VIEW 4: ESCALATION DESK -->
+            <section id="view-escalations" class="view-panel">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Human-in-the-Loop Review Desk</h1>
+                        <p class="page-subtitle">High-value payments (&gt;₹50,000) or retry limit cases held for operator approval.</p>
+                    </div>
+                </div>
+
+                <div id="escalationsList" class="cards-list">
+                    <p class="text-muted">Loading escalations...</p>
+                </div>
+            </section>
+
+            <!-- VIEW 5: SETTINGS & WEBHOOKS -->
+            <section id="view-settings" class="view-panel">
+                <div class="page-header">
+                    <div>
+                        <h1 class="page-title">Configuration & Policy Engine</h1>
+                        <p class="page-subtitle">Razorpay Test Mode credentials, active webhook listeners, and safety guardrail parameters.</p>
+                    </div>
+                </div>
+
+                <div class="settings-grid">
+                    <div class="settings-card">
+                        <h3>🔑 Razorpay API Credentials</h3>
+                        <div class="form-group">
+                            <label>Key ID</label>
+                            <input type="text" class="rzp-input" value="rzp_test_TWqY5RlQkIsPyT" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label>Key Secret</label>
+                            <input type="password" class="rzp-input" value="8xL3cbdPfrLRtkumwrGvlO9n" readonly>
+                        </div>
+                        <p class="form-help">Loaded securely from <code>.env</code> file.</p>
+                    </div>
+
+                    <div class="settings-card">
+                        <h3>🔗 Live Webhook Listener</h3>
+                        <div class="form-group">
+                            <label>Webhook URL</label>
+                            <input type="text" class="rzp-input" value="https://<your-ngrok-url>/webhooks/razorpay" readonly>
+                        </div>
+                        <div class="webhook-events-box">
+                            <div><b>Active Subscribed Events:</b></div>
+                            <ul>
+                                <li><code>payment.failed</code> ➔ AI Intercept & Diagnosis</li>
+                                <li><code>payment_link.paid</code> ➔ Reconciliation & Settlement</li>
+                                <li><code>payment.captured</code> ➔ Double-Debit Prevention</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <div class="settings-card full-width">
+                        <h3>🛡️ Deterministic Safety Guardrails</h3>
+                        <div class="guardrails-list">
+                            <div class="gr-item">
+                                <div class="gr-title">Max 2 Automated Retries</div>
+                                <div class="gr-desc">Prevents card network throttling and excessive SMS/WhatsApp customer notification spam.</div>
+                            </div>
+                            <div class="gr-item">
+                                <div class="gr-title">High-Value Cap (&gt;₹50,000 INR)</div>
+                                <div class="gr-desc">Automatically pauses automated bots on large financial amounts and routes them to human operators.</div>
+                            </div>
+                            <div class="gr-item">
+                                <div class="gr-title">TRAI Quiet Hours (9:00 PM – 8:00 AM IST)</div>
+                                <div class="gr-desc">Holds outbound customer communication during night hours and schedules execution for 8:00 AM.</div>
+                            </div>
+                            <div class="gr-item">
+                                <div class="gr-title">Ledger Verifier & Double-Debit Prevention</div>
+                                <div class="gr-desc">Checks bank ledger state to ensure transactions already captured are never charged again (NO_ACTION).</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- TRANSACTION DETAIL DRAWER -->
+    <div id="txDrawer" class="drawer-overlay" style="display:none;">
+        <div class="drawer-content">
+            <div class="drawer-header">
+                <h3 id="drawerTitle">Transaction Details</h3>
+                <button id="btnDrawerClose" class="drawer-close">&times;</button>
+            </div>
+            <div class="drawer-body" id="drawerBody">
+                <!-- Injected dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="rzpToast" class="toast-popup" style="display:none;"></div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>

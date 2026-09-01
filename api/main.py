@@ -1,5 +1,8 @@
+import os
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 from data.db import init_db
 from api.routes import seed, recovery, metrics, transactions, audit, health, webhooks
@@ -32,6 +35,12 @@ app.include_router(metrics.router)
 app.include_router(audit.router)
 app.include_router(webhooks.router)
 
+# Mount Static Frontend
+if os.path.exists("static"):
+    app.mount("/static", StaticFiles(directory="static"), name="static")
+
 @app.get("/")
 async def root():
+    if os.path.exists("static/index.html"):
+        return FileResponse("static/index.html")
     return {"message": "Welcome to RecoverIQ API - AI Revenue Recovery Agent"}
