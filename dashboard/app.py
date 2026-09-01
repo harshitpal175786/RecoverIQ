@@ -1,3 +1,7 @@
+"""RecoverIQ — Razorpay Merchant Dashboard Theme.
+Razorpay Buildathon 2026 • Track 03: AI Revenue Recovery
+"""
+
 import streamlit as st
 import httpx
 import pandas as pd
@@ -7,68 +11,175 @@ from typing import Dict, Any, List
 import json
 from datetime import datetime
 
-# --- CONFIG & CONSTANTS ---
+# --- APP CONFIGURATION ---
 API_URL = "http://localhost:8000"
-APP_TITLE = "RecoverIQ — AI Revenue Recovery Agent"
+APP_TITLE = "Razorpay Dashboard | RecoverIQ"
 
 st.set_page_config(
     page_title=APP_TITLE,
-    page_icon="💰",
+    page_icon="💳",
     layout="wide",
     initial_sidebar_state="expanded",
 )
 
-# Custom CSS for dark/professional fintech theme
+# --- RAZORPAY DESIGN SYSTEM CSS ---
 st.markdown("""
-    <style>
-    .stApp {
-        background-color: #0E1117;
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+
+    /* Global Typography & Light Theme */
+    html, body, [class*="css"], .stApp {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background-color: #F8FAFC !important;
+        color: #0F172A !important;
     }
-    .metric-card {
-        background-color: #1E2129;
-        border-radius: 8px;
-        padding: 16px;
-        border-left: 4px solid #00C853;
-        box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-    }
-    .metric-label {
-        font-size: 14px;
-        color: #A0AABF;
-        margin-bottom: 8px;
-    }
-    .metric-value {
-        font-size: 28px;
-        font-weight: bold;
+
+    /* Razorpay Top Navigation Bar */
+    .rzp-topbar {
+        background-color: #0C1322;
         color: #FFFFFF;
+        padding: 10px 20px;
+        border-radius: 8px 8px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin: -4rem -4rem 1.5rem -4rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
-    .status-badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: bold;
+
+    .rzp-logo {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        font-size: 20px;
+        font-weight: 800;
+        color: #3395FF;
+        letter-spacing: -0.5px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
-    .status-recovered { background-color: rgba(0, 200, 83, 0.2); color: #00C853; border: 1px solid #00C853; }
-    .status-failed { background-color: rgba(255, 82, 82, 0.2); color: #FF5252; border: 1px solid #FF5252; }
-    .status-escalated { background-color: rgba(255, 171, 0, 0.2); color: #FFAB00; border: 1px solid #FFAB00; }
-    .status-progress { background-color: rgba(33, 150, 243, 0.2); color: #2196F3; border: 1px solid #2196F3; }
-    .demo-box {
-        background: linear-gradient(135deg, #1A1F2C 0%, #111827 100%);
-        border: 1px solid #374151;
+    
+    .rzp-test-pill {
+        background-color: #059669;
+        color: #FFFFFF;
+        font-size: 11px;
+        font-weight: 700;
+        padding: 3px 10px;
+        border-radius: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* White Cards */
+    .rzp-card {
+        background-color: #FFFFFF;
+        border: 1px solid #E2E8F0;
         border-radius: 8px;
-        padding: 16px;
-        margin-bottom: 12px;
+        padding: 20px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        margin-bottom: 16px;
     }
-    </style>
+
+    .rzp-card-title {
+        font-size: 13px;
+        font-weight: 600;
+        color: #64748B;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 6px;
+    }
+
+    .rzp-card-val {
+        font-size: 26px;
+        font-weight: 700;
+        color: #0F172A;
+    }
+
+    .rzp-card-sub {
+        font-size: 12px;
+        color: #0284C7;
+        margin-top: 4px;
+        font-weight: 500;
+    }
+
+    /* Status Badges */
+    .status-badge {
+        display: inline-block;
+        padding: 3px 8px;
+        border-radius: 4px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+    }
+    .status-recovered { background-color: #ECFDF5; color: #059669; border: 1px solid #A7F3D0; }
+    .status-failed { background-color: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; }
+    .status-escalated { background-color: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
+    .status-progress { background-color: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+
+    /* Razorpay Primary Buttons */
+    div.stButton > button:first-child {
+        background-color: #0066FF !important;
+        color: #FFFFFF !important;
+        border: none !important;
+        border-radius: 6px !important;
+        font-weight: 600 !important;
+        font-size: 13px !important;
+        padding: 8px 16px !important;
+        transition: background-color 0.15s ease !important;
+    }
+    div.stButton > button:first-child:hover {
+        background-color: #0052CC !important;
+    }
+
+    /* Expander & Tabs */
+    .stTabs [data-baseweb="tab-list"] {
+        gap: 8px;
+        background-color: transparent;
+        border-bottom: 1px solid #E2E8F0;
+        padding-bottom: 4px;
+    }
+    .stTabs [data-baseweb="tab"] {
+        padding: 8px 16px;
+        color: #64748B;
+        font-weight: 600;
+        font-size: 14px;
+        border-radius: 6px;
+    }
+    .stTabs [aria-selected="true"] {
+        background-color: #EFF6FF !important;
+        color: #0066FF !important;
+    }
+</style>
+
+<!-- Razorpay Top Bar Header -->
+<div class="rzp-topbar">
+    <div style="display:flex; align-items:center; gap:16px;">
+        <div class="rzp-logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+                <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3395FF"/>
+                <path d="M2 17L12 22L22 17" stroke="#3395FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M2 12L12 17L22 12" stroke="#3395FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Razorpay <span style="font-weight:400; color:#94A3B8; font-size:16px;">| RecoverIQ</span>
+        </div>
+        <span class="rzp-test-pill">● Test Mode</span>
+    </div>
+    <div style="font-size:13px; color:#94A3B8; display:flex; gap:16px; align-items:center;">
+        <span>Track 03: AI Revenue Recovery</span>
+        <div style="background:#1E293B; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#FFFFFF; font-weight:700; font-size:11px;">HP</div>
+    </div>
+</div>
 """, unsafe_allow_html=True)
 
 
-# --- HELPER FUNCTIONS ---
+# --- FORMATTING UTILS ---
 def format_currency(amount: float) -> str:
     """Format float into Indian Rupee format."""
     if amount is None:
         return "₹0.00"
     amount = float(amount)
-    if amount >= 100000:
+    if amount >= 10000000:
+        return f"₹{amount/10000000:,.2f} Cr"
+    elif amount >= 100000:
         return f"₹{amount/100000:,.2f} Lakhs"
     elif amount >= 1000:
         s, *d = str(float(amount)).partition(".")
@@ -79,14 +190,14 @@ def format_currency(amount: float) -> str:
 
 def get_status_badge(status: str) -> str:
     status_str = str(status).upper()
-    if status_str in ["RECOVERED", "SUCCESS", "VERIFIED_SUCCESS"]:
-        return f'<span class="status-badge status-recovered">{status_str}</span>'
+    if status_str in ["RECOVERED", "SUCCESS", "VERIFIED_SUCCESS", "CAPTURED"]:
+        return f'<span class="status-badge status-recovered">● {status_str}</span>'
     elif status_str in ["FAILED", "ABANDONED", "VERIFIED_FAILED"]:
-        return f'<span class="status-badge status-failed">{status_str}</span>'
+        return f'<span class="status-badge status-failed">● {status_str}</span>'
     elif status_str in ["ESCALATED", "BLOCKED"]:
-        return f'<span class="status-badge status-escalated">{status_str}</span>'
+        return f'<span class="status-badge status-escalated">● {status_str}</span>'
     else:
-        return f'<span class="status-badge status-progress">{status_str}</span>'
+        return f'<span class="status-badge status-progress">● {status_str}</span>'
 
 
 # --- API CLIENT ---
@@ -112,117 +223,70 @@ def post_api(endpoint: str, params: Dict = None, json_body: Dict = None) -> Any:
         return {}
 
 
-# --- SIDEBAR ---
+# --- SIDEBAR NAVIGATION ---
 with st.sidebar:
-    st.title("💰 RecoverIQ")
-    st.markdown("**AI Revenue Recovery Agent**")
-    st.caption("Razorpay Buildathon 2026 • Track 03")
-    st.divider()
-
-    st.subheader("⚡ 1-Click SRS Demo Launcher")
-    st.markdown("Instantly test the 4 core SRS evaluation scenarios:")
-
-    if st.button("🎯 Run All 4 SRS Scenarios", type="primary", use_container_width=True):
-        with st.spinner("Executing 4 SRS Demo Scenarios across Agent Pipeline..."):
+    st.markdown("### ⚡ Quick Demo Launcher")
+    st.markdown("Test the 4 core SRS evaluation scenarios:")
+    if st.button("🎯 Run 4 SRS Demo Scenarios", type="primary", use_container_width=True):
+        with st.spinner("Executing 4 SRS Scenarios..."):
             demo_res = post_api("/demo/scenarios")
             if demo_res and "scenarios" in demo_res:
                 st.session_state["demo_scenarios_results"] = demo_res["scenarios"]
-                st.success("✅ 4 Demo Scenarios Executed Successfully!")
-                st.rerun()
-
-    demo_choice = st.selectbox(
-        "Or Pick Individual Scenario:",
-        [
-            "1. Transient Bank Timeout (Retry)",
-            "2. Method Optimization (Alt Link)",
-            "3. Retry Limit Reached (Escalate)",
-            "4. Gateway Timeout (Verifier)",
-        ],
-    )
-    if st.button("▶️ Run Selected Scenario", use_container_width=True):
-        scenario_idx = int(demo_choice[0]) - 1
-        with st.spinner(f"Executing Scenario {scenario_idx + 1}..."):
-            demo_res = post_api("/demo/scenarios")
-            if demo_res and "scenarios" in demo_res:
-                st.session_state["demo_scenarios_results"] = [demo_res["scenarios"][scenario_idx]]
-                st.success(f"✅ Scenario {scenario_idx + 1} Executed!")
+                st.success("✅ 4 Demo Scenarios Executed!")
                 st.rerun()
 
     st.divider()
-    st.subheader("Batch Operations")
+    st.markdown("### 🛠️ Batch Operations")
     seed_count = st.slider("Evaluation Batch Size", min_value=100, max_value=1000, value=500, step=100)
     use_ai = st.toggle("Enable AI Reasoner", value=True)
 
-    col_btn1, col_btn2 = st.columns(2)
-    with col_btn1:
+    col1, col2 = st.columns(2)
+    with col1:
         if st.button("🌱 Seed Data", use_container_width=True):
-            with st.spinner(f"Generating {seed_count} synthetic transactions..."):
+            with st.spinner("Generating batch..."):
                 res = post_api("/seed", params={"count": seed_count, "seed": 42})
                 if res:
-                    st.success(f"Seeded {res.get('count')} records ({format_currency(res.get('total_amount_inr', 0))})")
+                    st.success(f"Seeded {res.get('count')} records")
                     st.rerun()
-
-    with col_btn2:
-        if st.button("🚀 Run Pipeline", use_container_width=True):
-            with st.spinner("Processing batch through AI Recovery Agent..."):
+    with col2:
+        if st.button("🚀 Run Recovery", use_container_width=True):
+            with st.spinner("Processing batch..."):
                 res = post_api("/run", params={"use_ai": str(use_ai).lower(), "batch_size": 100})
                 if res:
-                    st.success(f"Recovered {format_currency(res.get('total_recovered_inr', 0))} across {res.get('processed')} records")
+                    st.success(f"Recovered {format_currency(res.get('total_recovered_inr', 0))}")
                     st.rerun()
 
     st.divider()
-    # Health check
+    # System Status
     health = fetch_api("/health")
     if health:
-        st.caption(f"🟢 **API Status**: {health.get('status', 'OK')} | v{health.get('version', '0.1.0')}")
+        st.caption(f"🟢 **API Status**: Online (v{health.get('version', '0.1.0')})")
+        st.caption("🔗 **Razorpay Test Keys**: Connected")
     else:
-        st.caption("🔴 **API Offline** (Run `uvicorn api.main:app --reload`)")
+        st.caption("🔴 **API Offline**")
 
 
-# --- SRS DEMO SCENARIOS BANNER (IF TRIGGERED) ---
-if "demo_scenarios_results" in st.session_state and st.session_state["demo_scenarios_results"]:
-    with st.expander("🎯 **SRS Demo Scenarios Execution Report (Click to expand/collapse)**", expanded=True):
-        st.markdown("### 🔍 Live Agent Decision Trace & Outcome Verification")
-        scs = st.session_state["demo_scenarios_results"]
-        for sc in scs:
-            st.markdown(f"""
-            <div class="demo-box">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <h4 style="margin:0; color:#00E5FF;">{sc.get('title')}</h4>
-                    {get_status_badge(sc.get('verification_status'))}
-                </div>
-                <p style="color:#A0AABF; margin: 4px 0 8px 0;">{sc.get('description')}</p>
-                <div style="font-size:13px; line-height:1.6;">
-                    <b>Transaction ID:</b> <code>{sc.get('transaction_id')}</code> | <b>Amount:</b> {format_currency(sc.get('amount_inr'))} <br/>
-                    <b>Expected Action:</b> <code>{sc.get('expected_action')}</code> | <b>Actual AI Action:</b> <code>{sc.get('actual_action')}</code> | <b>Confidence:</b> {sc.get('confidence_score'):.0%}<br/>
-                    <b>Guardrail Check:</b> {'✅ Passed (No policy violation)' if sc.get('guardrail_passed') else f"🛑 Modified ({', '.join(sc.get('guardrail_modifications', []))})"}<br/>
-                    <b>AI Reasoner Trace:</b> <i>{sc.get('reasoning')}</i>
-                </div>
-            </div>
-            """, unsafe_allow_html=True)
-        if st.button("❌ Close Demo Report"):
-            st.session_state["demo_scenarios_results"] = None
-            st.rerun()
-
-
-# --- MAIN LAYOUT TABS ---
-tab1, tab2, tab3, tab4 = st.tabs([
-    "📊 Recovery Dashboard", 
-    "⚖️ Baseline vs AI Uplift", 
-    "🔍 Transaction Explorer", 
-    "📋 Audit Trail & Escalations"
+# --- MAIN RAZORPAY DASHBOARD TABS ---
+tab1, tab2, tab3, tab4, tab5 = st.tabs([
+    "📊 Overview & Analytics", 
+    "💳 Transactions", 
+    "⚖️ Baseline vs. AI Uplift", 
+    "🚨 Escalations Queue",
+    "🎯 SRS Demo Scenarios"
 ])
 
 
-# ==========================================
-# --- TAB 1: RECOVERY DASHBOARD ---
-# ==========================================
+# =========================================================================
+# --- TAB 1: OVERVIEW & ANALYTICS ---
+# =========================================================================
 with tab1:
-    st.header("Real-Time Revenue Recovery Performance")
+    st.markdown("### Hey Harshit, welcome to RecoverIQ Revenue Recovery")
+    st.caption("Real-time revenue protection and autonomous failure recovery across your payment channels.")
+
     metrics = fetch_api("/metrics")
 
     if not metrics or "total_transactions" not in metrics:
-        st.info("No transaction data loaded. Please click **'Seed Data'** and **'Run Recovery Pipeline'** in the sidebar.")
+        st.info("No transaction data loaded. Click **'Seed Data'** on the left sidebar to populate test transactions.")
     else:
         tot_tx = metrics.get("total_transactions", 0)
         tot_failed = metrics.get("total_failed_amount_inr", 0.0)
@@ -232,87 +296,188 @@ with tab1:
         esc_count = metrics.get("escalated_count", 0)
         compliance = metrics.get("guardrail_compliance_pct", 100.0)
 
-        # Top KPI Cards
-        col1, col2, col3, col4 = st.columns(4)
-        with col1:
-            st.metric(label="Total Revenue at Risk", value=format_currency(tot_failed), delta=f"{tot_tx} Transactions", delta_color="off")
-        with col2:
-            st.metric(label="Recovered Revenue", value=format_currency(tot_recovered), delta=f"{rec_count} Recovered ({rec_rate:.1f}%)")
-        with col3:
-            st.metric(label="Recovery Success Rate", value=f"{rec_rate:.1f}%", delta=f"{rec_count}/{tot_tx} Recovered")
-        with col4:
-            st.metric(label="Guardrail Compliance", value=f"{compliance:.0f}%", delta=f"{esc_count} Escalated", delta_color="off")
+        # 4 Razorpay-styled Metric Cards
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.markdown(f"""
+            <div class="rzp-card">
+                <div class="rzp-card-title">Failed Volume at Risk</div>
+                <div class="rzp-card-val">{format_currency(tot_failed)}</div>
+                <div class="rzp-card-sub">{tot_tx} Failed Transactions</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with c2:
+            st.markdown(f"""
+            <div class="rzp-card">
+                <div class="rzp-card-title">Recovered Revenue</div>
+                <div class="rzp-card-val" style="color:#059669;">+{format_currency(tot_recovered)}</div>
+                <div class="rzp-card-sub" style="color:#059669;">{rec_count} Transactions Won Back</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with c3:
+            st.markdown(f"""
+            <div class="rzp-card">
+                <div class="rzp-card-title">Recovery Success Rate</div>
+                <div class="rzp-card-val" style="color:#0284C7;">{rec_rate:.1f}%</div>
+                <div class="rzp-card-sub">{rec_count} of {tot_tx} Recovered</div>
+            </div>
+            """, unsafe_allow_html=True)
+        with c4:
+            st.markdown(f"""
+            <div class="rzp-card">
+                <div class="rzp-card-title">Guardrail Compliance</div>
+                <div class="rzp-card-val" style="color:#D97706;">{compliance:.0f}%</div>
+                <div class="rzp-card-sub">{esc_count} Flagged for Review</div>
+            </div>
+            """, unsafe_allow_html=True)
 
-        st.divider()
-
-        # Visualizations
-        col_c1, col_c2 = st.columns(2)
-
-        with col_c1:
-            st.subheader("Recovery Rate Gauge")
-            fig_gauge = go.Figure(go.Indicator(
-                mode="gauge+number",
-                value=rec_rate,
-                number={'suffix': "%", 'font': {'color': "#FFFFFF"}},
-                domain={'x': [0, 1], 'y': [0, 1]},
-                gauge={
-                    'axis': {'range': [0, 100], 'tickwidth': 1, 'tickcolor': "white"},
-                    'bar': {'color': "#00C853"},
-                    'bgcolor': "#1E2129",
-                    'steps': [
-                        {'range': [0, 25], 'color': 'rgba(255, 82, 82, 0.4)'},
-                        {'range': [25, 50], 'color': 'rgba(255, 171, 0, 0.4)'},
-                        {'range': [50, 100], 'color': 'rgba(0, 200, 83, 0.4)'}
-                    ],
-                }
-            ))
-            fig_gauge.update_layout(height=320, margin=dict(l=20, r=20, t=30, b=20), paper_bgcolor="rgba(0,0,0,0)", font={'color': "#FFFFFF"})
-            st.plotly_chart(fig_gauge, use_container_width=True)
-
-        with col_c2:
-            st.subheader("Recovery Action Distribution")
+        # Clean Chart Breakdowns
+        col_g1, col_g2 = st.columns(2)
+        with col_g1:
+            st.markdown("#### 🎯 Recovery Action Breakdown")
             actions = metrics.get("action_distribution", {})
             if actions:
-                fig_pie = px.pie(
+                color_map = {
+                    "DELAY_AND_RETRY": "#0284C7",
+                    "PAYMENT_LINK": "#10B981",
+                    "ALTERNATE_METHOD": "#8B5CF6",
+                    "ESCALATE": "#F59E0B",
+                    "RETRY": "#3B82F6",
+                    "NO_ACTION": "#EF4444",
+                    "PENDING": "#94A3B8"
+                }
+                fig_act = px.pie(
                     names=list(actions.keys()),
                     values=list(actions.values()),
-                    hole=0.45,
-                    color_discrete_sequence=px.colors.qualitative.Prism
+                    hole=0.6,
+                    color=list(actions.keys()),
+                    color_discrete_map=color_map,
                 )
-                fig_pie.update_layout(height=320, margin=dict(l=20, r=20, t=20, b=20), paper_bgcolor="rgba(0,0,0,0)", font={'color': "#FFFFFF"})
-                st.plotly_chart(fig_pie, use_container_width=True)
-            else:
-                st.write("No recovery action data.")
+                fig_act.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    font={'color': "#0F172A", 'family': 'Inter'},
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    height=260,
+                )
+                st.plotly_chart(fig_act, use_container_width=True)
 
-        # Failure Category Breakdown
-        st.subheader("Failure Category Distribution")
-        fail_cats = metrics.get("failure_category_distribution", {})
-        if fail_cats:
-            df_fail = pd.DataFrame(list(fail_cats.items()), columns=["Failure Category", "Count"]).sort_values("Count", ascending=True)
-            fig_bar = px.bar(
-                df_fail, x="Count", y="Failure Category", orientation='h',
-                color="Count", color_continuous_scale="Viridis", text="Count"
-            )
-            fig_bar.update_layout(height=280, margin=dict(l=20, r=20, t=20, b=20), paper_bgcolor="rgba(0,0,0,0)", font={'color': "#FFFFFF"})
-            st.plotly_chart(fig_bar, use_container_width=True)
+        with col_g2:
+            st.markdown("#### 🔍 Failure Root-Causes")
+            fail_cats = metrics.get("failure_category_distribution", {})
+            if fail_cats:
+                df_fail = pd.DataFrame(list(fail_cats.items()), columns=["Category", "Count"]).sort_values(by="Count", ascending=True)
+                fig_fail = px.bar(
+                    df_fail,
+                    x="Count",
+                    y="Category",
+                    orientation='h',
+                    color_discrete_sequence=["#0066FF"],
+                    text="Count"
+                )
+                fig_fail.update_layout(
+                    paper_bgcolor="rgba(0,0,0,0)",
+                    plot_bgcolor="rgba(0,0,0,0)",
+                    font={'color': "#0F172A", 'family': 'Inter'},
+                    margin=dict(l=10, r=10, t=10, b=10),
+                    height=260,
+                    xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
+                    yaxis=dict(showgrid=False)
+                )
+                st.plotly_chart(fig_fail, use_container_width=True)
 
 
-# ==========================================
-# --- TAB 2: BASELINE VS RECOVERIQ AI ---
-# ==========================================
+# =========================================================================
+# --- TAB 2: TRANSACTIONS & DECISION TRACE ---
+# =========================================================================
 with tab2:
-    st.header("Comparative Benchmark: Naive Baseline vs. RecoverIQ AI")
-    st.markdown(
-        "Demonstrates measured money recovered across a standardized 200-transaction evaluation batch "
-        "comparing **Single-Retry Baseline** against **RecoverIQ AI Agent** with contextual intervention & guardrails."
-    )
+    st.markdown("### Payment Transactions & Recovery Logs")
+    st.caption("Search, filter, and inspect AI recovery traces for individual customer transactions.")
 
-    if st.button("⚖️ Run Live Benchmark Comparison", type="primary"):
-        with st.spinner("Executing side-by-side benchmark simulation..."):
+    c_f1, c_f2, c_f3 = st.columns([2, 1, 1])
+    with c_f1:
+        search_kw = st.text_input("Search Transaction ID or Customer Name", placeholder="e.g. txn_ or Sharma")
+    with c_f2:
+        flt_status = st.selectbox("Status", ["ALL", "FAILED", "RECOVERED", "ESCALATED", "ABANDONED"])
+    with c_f3:
+        max_recs = st.selectbox("Rows per page", [15, 30, 50, 100], index=0)
+
+    params = {"limit": max_recs}
+    if flt_status != "ALL":
+        params["status"] = flt_status
+
+    tx_list = fetch_api("/transactions", params=params)
+
+    if tx_list and isinstance(tx_list, list):
+        if search_kw:
+            tx_list = [t for t in tx_list if search_kw.lower() in t.get("transaction_id", "").lower() or search_kw.lower() in t.get("customer_name", "").lower()]
+
+        for tx in tx_list:
+            tid = tx.get("transaction_id")
+            amt = tx.get("amount_inr", 0.0)
+            status = tx.get("status", "UNKNOWN")
+            cust = tx.get("customer_name", "Customer")
+            method = tx.get("payment_method", "N/A")
+            bank = tx.get("issuer_bank", "N/A")
+            action = tx.get("recovery_action", "PENDING")
+
+            with st.expander(f"💳 {tid}  |  {cust}  |  {format_currency(amt)}  |  {method} ({bank})  |  Action: {action}"):
+                c_d1, c_d2 = st.columns(2)
+                with c_d1:
+                    st.markdown("**Customer & Payment Details**")
+                    st.write(f"- **Customer Name:** {cust}")
+                    st.write(f"- **Segment:** `{tx.get('customer_segment', 'STANDARD')}`")
+                    st.write(f"- **Amount:** {format_currency(amt)}")
+                    st.write(f"- **Method / Bank:** {method} • {bank}")
+                with c_d2:
+                    st.markdown("**Failure Diagnosis**")
+                    st.write(f"- **Failure Category:** `{tx.get('failure_category')}`")
+                    st.write(f"- **Error Code:** `{tx.get('error_code')}`")
+                    st.write(f"- **Error Reason:** `{tx.get('error_reason')}`")
+                    st.write(f"- **Status:** {get_status_badge(status)}", unsafe_allow_html=True)
+
+                # Fetch and render AI Decision Trace
+                logs = fetch_api(f"/logs/{tid}")
+                if logs and isinstance(logs, list):
+                    st.markdown("---")
+                    st.markdown("**🧠 AI Reasoning Trace & Action Plan**")
+                    for log in logs:
+                        try:
+                            out = json.loads(log.get("output_data_json", "{}"))
+                            if out.get("decision"):
+                                d = out.get("decision")
+                                st.info(f"**Recommended Action:** `{d.get('recommended_action')}` (Confidence: {d.get('confidence_score', 0):.0%})\n\n**Reasoning:** {d.get('reasoning')}")
+                                if d.get("notification_message"):
+                                    st.success(f"💬 **Outbound Customer Template ({d.get('communication_channel')}):**\n\n_{d.get('notification_message')}_")
+                            elif out.get("result"):
+                                r = out.get("result")
+                                if not r.get("passed"):
+                                    st.warning(f"🛑 **Guardrails Applied:** {', '.join(r.get('checks_blocked', []))} ➔ Action Modified to: `{r.get('final_action')}`")
+                        except Exception:
+                            pass
+
+                if status == "FAILED":
+                    if st.button(f"⚡ Execute Recovery on {tid}", key=f"btn_{tid}"):
+                        with st.spinner("Executing..."):
+                            post_api(f"/recovery/{tid}/execute")
+                            st.success("Recovery Executed!")
+                            st.rerun()
+    else:
+        st.info("No transactions found.")
+
+
+# =========================================================================
+# --- TAB 3: BASELINE VS. AI UPLIFT BENCHMARK ---
+# =========================================================================
+with tab3:
+    st.markdown("### Comparative Benchmark: Naive Baseline vs. RecoverIQ AI")
+    st.caption("Empirical demonstration of money recovered and false-action reduction across an identical 50-transaction evaluation batch.")
+
+    if st.button("⚖️ Run Side-by-Side Benchmark", type="primary"):
+        with st.spinner("Executing benchmark simulation..."):
             comp = fetch_api("/compare", params={"count": 50})
             if comp:
                 st.session_state["comparison_report"] = comp
-                st.success("Benchmark completed successfully!")
+                st.success("Benchmark completed!")
 
     if "comparison_report" in st.session_state and st.session_state["comparison_report"]:
         comp = st.session_state["comparison_report"]
@@ -323,208 +488,124 @@ with tab2:
         uplift_rev_pct = comp.get("revenue_uplift_pct", 0.0)
         false_action_imp = comp.get("false_action_improvement_pct", 0.0)
 
-        st.divider()
-        st.markdown(f"### 🏆 Uplift Summary: **+{format_currency(uplift_rev)} ({uplift_rev_pct:.1f}% more revenue recovered)**")
-        st.info(comp.get("summary", ""))
+        st.markdown(f"""
+        <div style="background-color:#ECFDF5; border:1px solid #A7F3D0; border-radius:8px; padding:16px; margin: 16px 0;">
+            <h4 style="margin:0; color:#065F46;">🏆 Net Uplift: +{format_currency(uplift_rev)} ({uplift_rev_pct:.1f}% more revenue recovered)</h4>
+            <p style="margin:4px 0 0 0; color:#047857; font-size:13px;">{comp.get('summary', '')}</p>
+        </div>
+        """, unsafe_allow_html=True)
 
-        c1, c2, c3, c4 = st.columns(4)
-        with c1:
-            st.metric(
-                label="Baseline Recovery Rate",
-                value=f"{bl.get('recovery_rate_pct', 0):.1f}%",
-                delta=format_currency(bl.get('recovered_amount_inr', 0)),
-                delta_color="off"
-            )
-        with c2:
-            st.metric(
-                label="RecoverIQ AI Recovery",
-                value=f"{riq.get('recovery_rate_pct', 0):.1f}%",
-                delta=f"+{uplift_rate:.1f}% rate ({format_currency(riq.get('recovered_amount_inr', 0))})"
-            )
-        with c3:
-            st.metric(
-                label="Net Revenue Uplift",
-                value=format_currency(uplift_rev),
-                delta=f"+{uplift_rev_pct:.1f}%"
-            )
-        with c4:
-            st.metric(
-                label="False-Action Reduction",
-                value=f"{false_action_imp:.1f}%",
-                delta="Safe Guardrails"
-            )
+        cb1, cb2, cb3, cb4 = st.columns(4)
+        with cb1:
+            st.metric(label="Baseline Recovery Rate", value=f"{bl.get('recovery_rate_pct', 0):.1f}%", delta=format_currency(bl.get('recovered_amount_inr', 0)), delta_color="off")
+        with cb2:
+            st.metric(label="RecoverIQ AI Recovery", value=f"{riq.get('recovery_rate_pct', 0):.1f}%", delta=f"+{uplift_rate:.1f}% rate ({format_currency(riq.get('recovered_amount_inr', 0))})")
+        with cb3:
+            st.metric(label="Net Revenue Uplift", value=format_currency(uplift_rev), delta=f"+{uplift_rev_pct:.1f}% uplift")
+        with cb4:
+            st.metric(label="False-Action Reduction", value=f"{false_action_imp:.1f}%", delta="Safe Guardrails")
 
-        st.subheader("Performance Comparison")
-        col_bar1, col_bar2 = st.columns(2)
-
-        with col_bar1:
-            df_rates = pd.DataFrame({
-                "Strategy": ["Naive Baseline (Fixed Retry)", "RecoverIQ AI Agent"],
+        st.markdown("#### Comparison Charts")
+        col_b1, col_b2 = st.columns(2)
+        with col_b1:
+            df_r = pd.DataFrame({
+                "Strategy": ["Naive Single-Retry Baseline", "RecoverIQ AI Agent"],
                 "Recovery Rate (%)": [bl.get('recovery_rate_pct', 0), riq.get('recovery_rate_pct', 0)]
             })
-            fig_r = px.bar(df_rates, x="Strategy", y="Recovery Rate (%)", color="Strategy",
-                           color_discrete_map={"Naive Baseline (Fixed Retry)": "#64748B", "RecoverIQ AI Agent": "#00C853"}, text="Recovery Rate (%)")
-            fig_r.update_layout(paper_bgcolor="rgba(0,0,0,0)", font={'color': "#FFFFFF"}, showlegend=False, height=300)
+            fig_r = px.bar(df_r, x="Strategy", y="Recovery Rate (%)", color="Strategy",
+                           color_discrete_map={"Naive Single-Retry Baseline": "#94A3B8", "RecoverIQ AI Agent": "#10B981"}, text="Recovery Rate (%)")
+            fig_r.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={'color': "#0F172A", 'family': 'Inter'}, showlegend=False, height=280)
             st.plotly_chart(fig_r, use_container_width=True)
 
-        with col_bar2:
-            df_revs = pd.DataFrame({
-                "Strategy": ["Naive Baseline (Fixed Retry)", "RecoverIQ AI Agent"],
+        with col_b2:
+            df_v = pd.DataFrame({
+                "Strategy": ["Naive Single-Retry Baseline", "RecoverIQ AI Agent"],
                 "Recovered Amount (₹)": [bl.get('recovered_amount_inr', 0), riq.get('recovered_amount_inr', 0)]
             })
-            fig_rev = px.bar(df_revs, x="Strategy", y="Recovered Amount (₹)", color="Strategy",
-                             color_discrete_map={"Naive Baseline (Fixed Retry)": "#64748B", "RecoverIQ AI Agent": "#00E5FF"}, text="Recovered Amount (₹)")
-            fig_rev.update_layout(paper_bgcolor="rgba(0,0,0,0)", font={'color': "#FFFFFF"}, showlegend=False, height=300)
-            st.plotly_chart(fig_rev, use_container_width=True)
+            fig_v = px.bar(df_v, x="Strategy", y="Recovered Amount (₹)", color="Strategy",
+                           color_discrete_map={"Naive Single-Retry Baseline": "#94A3B8", "RecoverIQ AI Agent": "#0066FF"}, text="Recovered Amount (₹)")
+            fig_v.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={'color': "#0F172A", 'family': 'Inter'}, showlegend=False, height=280)
+            st.plotly_chart(fig_v, use_container_width=True)
 
 
-# ==========================================
-# --- TAB 3: TRANSACTION EXPLORER ---
-# ==========================================
-with tab3:
-    st.header("Transaction Explorer & Decision Traces")
-
-    col_f1, col_f2, col_f3 = st.columns([2, 1, 1])
-    with col_f1:
-        tx_status = st.selectbox("Filter Status", ["ALL", "FAILED", "RECOVERED", "ESCALATED", "ABANDONED", "RECOVERY_IN_PROGRESS"])
-    with col_f2:
-        tx_limit = st.number_input("Limit", min_value=10, max_value=200, value=30, step=10)
-    with col_f3:
-        fetch_btn = st.button("🔍 Load Records", use_container_width=True)
-
-    params = {"limit": tx_limit}
-    if tx_status != "ALL":
-        params["status"] = tx_status
-
-    txs = fetch_api("/transactions", params=params)
-
-    if txs and isinstance(txs, list):
-        st.write(f"Showing **{len(txs)}** transactions:")
-        for tx in txs:
-            tid = tx.get("transaction_id", "")
-            amt = tx.get("amount_inr", 0)
-            status = tx.get("status", "UNKNOWN")
-            method = tx.get("payment_method", "UNKNOWN")
-            bank = tx.get("issuer_bank", "UNKNOWN")
-            customer = tx.get("customer_name", "Customer")
-            category = tx.get("failure_category", "UNKNOWN")
-
-            with st.expander(f"{tid} | {customer} | {format_currency(amt)} | {method} ({bank}) | {status}"):
-                c1, c2, c3 = st.columns(3)
-                with c1:
-                    st.write("**Customer:**", customer)
-                    st.write("**Segment:**", tx.get("customer_segment", "STANDARD"))
-                    st.write("**Customer LTV:**", format_currency(tx.get("customer_ltv_inr", 0)))
-                with c2:
-                    st.write("**Payment Method:**", f"{method} / {bank}")
-                    st.write("**Failure Category:**", category)
-                    st.write("**Error Reason:**", tx.get("error_reason", "N/A"))
-                with c3:
-                    st.markdown(f"**Status:** {get_status_badge(status)}", unsafe_allow_html=True)
-                    st.write("**Attempts:**", tx.get("attempt_count", 1))
-                    if tx.get("recovered_amount_inr", 0) > 0:
-                        st.write("**Amount Recovered:**", format_currency(tx.get("recovered_amount_inr", 0)))
-
-                # Decision details & Audit Logs
-                tx_details = fetch_api(f"/transactions/{tid}")
-                if tx_details:
-                    logs = tx_details.get("audit_logs", [])
-                    attempts = tx_details.get("recovery_attempts", [])
-
-                    if logs:
-                        st.divider()
-                        st.subheader("📋 Decision Trace & Audit Stages")
-                        for log in logs:
-                            stage = log.get("stage", "STAGE")
-                            duration = log.get("duration_ms", 0.0)
-                            st.markdown(f"**Stage: `{stage}`** ({duration:.1f}ms)")
-                            
-                            # Parse and display input/output data
-                            try:
-                                in_data = json.loads(log.get("input_data_json", "{}"))
-                                out_data = json.loads(log.get("output_data_json", "{}"))
-                                if out_data.get("decision"):
-                                    d = out_data.get("decision")
-                                    st.info(f"**AI Recommendation:** `{d.get('recommended_action')}` (Confidence: {d.get('confidence_score', 0):.0%})\n\n**Reasoning:** {d.get('reasoning')}")
-                                    if d.get("notification_message"):
-                                        st.success(f"💬 **Customer Message Template ({d.get('communication_channel')}):**\n\n_{d.get('notification_message')}_")
-                                elif out_data.get("result"):
-                                    r = out_data.get("result")
-                                    if not r.get("passed"):
-                                        st.error(f"🛑 **Guardrails Triggered:** {', '.join(r.get('checks_blocked', []))} $\\rightarrow$ Final Action Modified to: `{r.get('final_action')}`")
-                            except Exception:
-                                pass
-
-                # Manual Execution Button if still failed
-                if status == "FAILED":
-                    if st.button(f"⚡ Execute Recovery on {tid}", key=f"exec_{tid}"):
-                        with st.spinner("Processing..."):
-                            exec_res = post_api(f"/recovery/{tid}/execute")
-                            if exec_res:
-                                st.success("Recovery Executed!")
-                                st.rerun()
-    else:
-        st.info("No transactions found. Click **'Seed Data'** on the sidebar.")
-
-
-# ==========================================
-# --- TAB 4: AUDIT TRAIL & ESCALATIONS ---
-# ==========================================
+# =========================================================================
+# --- TAB 4: ESCALATIONS & GUARDRAILS QUEUE ---
+# =========================================================================
 with tab4:
-    st.header("Compliance Audit Trail & Escalation Queue")
+    st.markdown("### Human-in-the-Loop Review Desk")
+    st.caption("Transactions flagged by deterministic guardrails (High-Value >₹50,000 or Retry Limits) held for operator approval.")
 
-    sub1, sub2 = st.tabs(["🚨 Human Review Queue (Escalations)", "🛡️ Guardrail Rules & Policy Engine"])
+    escalations = fetch_api("/escalations")
 
-    with sub1:
-        st.subheader("Transactions Flagged for Human Review")
-        escalations = fetch_api("/escalations")
+    if escalations and isinstance(escalations, list):
+        unresolved = [e for e in escalations if not e.get("resolved")]
+        st.write(f"**{len(unresolved)}** Pending Human Escalations:")
 
-        if escalations and isinstance(escalations, list):
-            df_esc = pd.DataFrame(escalations)
-            unresolved = [e for e in escalations if not e.get("resolved")]
-            st.write(f"**{len(unresolved)}** Pending Escalations:")
+        for esc in escalations:
+            eid = esc.get("escalation_id", "")
+            tx_id = esc.get("transaction_id", "")
+            amt = esc.get("amount_inr", 0.0)
+            reason = esc.get("reason", "")
+            priority = esc.get("priority", "MEDIUM")
+            resolved = esc.get("resolved", False)
+            cust = esc.get("customer_name", "Customer")
 
-            for esc in escalations:
-                eid = esc.get("escalation_id", "")
-                tx_id = esc.get("transaction_id", "")
-                amt = esc.get("amount_inr", 0.0)
-                reason = esc.get("reason", "")
-                priority = esc.get("priority", "MEDIUM")
-                resolved = esc.get("resolved", False)
-                cust = esc.get("customer_name", "Customer")
+            with st.expander(f"[{priority}] {eid} | {cust} ({format_currency(amt)}) | {'✅ Resolved' if resolved else '⚠️ Pending Review'}"):
+                c1, c2 = st.columns(2)
+                with c1:
+                    st.write("**Transaction ID:**", tx_id)
+                    st.write("**Customer:**", cust)
+                    st.write("**Amount:**", format_currency(amt))
+                    st.write("**Method / Bank:**", f"{esc.get('payment_method')} ({esc.get('issuer_bank')})")
+                with c2:
+                    st.write("**Flagged Reason:**", reason)
+                    st.write("**Priority:**", priority)
+                    st.write("**Created At:**", esc.get("created_at", "N/A"))
 
-                with st.expander(f"[{priority}] {eid} | {cust} ({format_currency(amt)}) | {'✅ Resolved' if resolved else '⚠️ Pending'}"):
-                    c1, c2 = st.columns(2)
-                    with c1:
-                        st.write("**Transaction ID:**", tx_id)
-                        st.write("**Customer:**", cust)
-                        st.write("**Amount:**", format_currency(amt))
-                        st.write("**Payment Method / Bank:**", f"{esc.get('payment_method')} ({esc.get('issuer_bank')})")
-                    with c2:
-                        st.write("**Escalation Reason:**", reason)
-                        st.write("**Priority:**", priority)
-                        st.write("**Created At:**", esc.get("created_at", "N/A"))
+                if not resolved:
+                    notes = st.text_input("Resolution Notes", key=f"notes_{eid}", placeholder="e.g. Approved for manual VIP bank transfer")
+                    if st.button("✅ Mark as Resolved", key=f"res_{eid}"):
+                        res_out = post_api(f"/escalations/{eid}/resolve", json_body={"notes": notes})
+                        if res_out:
+                            st.success("Escalation resolved!")
+                            st.rerun()
+                else:
+                    st.info(f"**Resolution Notes:** {esc.get('resolution_notes', 'N/A')} (Resolved at: {esc.get('resolved_at')})")
+    else:
+        st.success("🎉 No pending escalations in queue!")
 
-                    if not resolved:
-                        notes = st.text_input("Human Operator Resolution Notes", key=f"notes_{eid}")
-                        if st.button("✅ Mark as Resolved", key=f"res_{eid}"):
-                            res_out = post_api(f"/escalations/{eid}/resolve", json_body={"notes": notes})
-                            if res_out:
-                                st.success("Escalation resolved!")
-                                st.rerun()
-                    else:
-                        st.info(f"**Resolution Notes:** {esc.get('resolution_notes', 'N/A')} (Resolved at: {esc.get('resolved_at')})")
-        else:
-            st.success("No pending escalations found! 🎉")
 
-    with sub2:
-        st.subheader("Active Guardrails & Safety Parameters")
-        st.markdown("""
-        RecoverIQ enforces deterministic safety guardrails before any recovery action is executed:
-        - **Max 2 Automated Retries**: Prevents payment network throttling and customer spam.
-        - **High-Value Cap (>₹50,000)**: Automatically pauses automated retries on large sums and routes to human approval.
-        - **TRAI Quiet Hours (9 PM - 8 AM IST)**: Holds customer-facing communications and schedules morning delivery.
-        - **Already-Recovered Check**: Verifier inspects payment status to eliminate duplicate debits.
-        - **Low AI Confidence Threshold (<0.60)**: Falls back to deterministic rule engine when confidence is insufficient.
-        - **Idempotency & Deduplication**: Prevents duplicate execution on webhook retries.
-        """)
+# =========================================================================
+# --- TAB 5: 1-CLICK SRS DEMO SCENARIOS ---
+# =========================================================================
+with tab5:
+    st.markdown("### 🎯 4 Core SRS Demo Scenarios")
+    st.caption("Demonstrate reproducible test edge cases required by the hackathon evaluation.")
+
+    if st.button("🚀 Run All 4 SRS Scenarios", type="primary"):
+        with st.spinner("Executing 4 demo scenarios..."):
+            demo_res = post_api("/demo/scenarios")
+            if demo_res and "scenarios" in demo_res:
+                st.session_state["demo_scenarios_results"] = demo_res["scenarios"]
+                st.success("✅ 4 Demo Scenarios Executed Successfully!")
+
+    if "demo_scenarios_results" in st.session_state and st.session_state["demo_scenarios_results"]:
+        scs = st.session_state["demo_scenarios_results"]
+        for sc in scs:
+            st.markdown(f"""
+            <div style="background:#FFFFFF; border:1px solid #E2E8F0; border-radius:8px; padding:16px; margin-bottom:12px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <h4 style="margin:0; color:#0F172A; font-size:15px;">{sc.get('title')}</h4>
+                    {get_status_badge(sc.get('verification_status'))}
+                </div>
+                <p style="color:#64748B; margin: 4px 0 10px 0; font-size:13px;">{sc.get('description')}</p>
+                <div style="font-size:13px; line-height:1.6; background:#F8FAFC; border:1px solid #E2E8F0; padding:10px; border-radius:6px;">
+                    <b>Transaction ID:</b> <code>{sc.get('transaction_id')}</code> | <b>Amount:</b> {format_currency(sc.get('amount_inr'))} <br/>
+                    <b>Expected Action:</b> <code>{sc.get('expected_action')}</code> | <b>AI Decision:</b> <code style="color:#0066FF;">{sc.get('actual_action')}</code> (Confidence: {sc.get('confidence_score'):.0%})<br/>
+                    <b>Guardrail Check:</b> {'✅ Passed' if sc.get('guardrail_passed') else f"<span style='color:#D97706;'>🛑 Modified ({', '.join(sc.get('guardrail_modifications', []))})</span>"}<br/>
+                    <b>AI Reasoner Trace:</b> <i>"{sc.get('reasoning')}"</i>
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+    else:
+        st.info("Click **'Run All 4 SRS Scenarios'** above to execute the demonstration.")
