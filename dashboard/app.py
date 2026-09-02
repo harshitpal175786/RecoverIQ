@@ -1,4 +1,4 @@
-"""RecoverIQ — Razorpay Merchant Dashboard Theme.
+"""RecoverIQ — Razorpay Merchant Dashboard.
 Razorpay Buildathon 2026 • Track 03: AI Revenue Recovery
 """
 
@@ -22,65 +22,74 @@ st.set_page_config(
     initial_sidebar_state="expanded",
 )
 
-# --- RAZORPAY DESIGN SYSTEM CSS ---
+# --- PIXEL-PERFECT RAZORPAY DESIGN SYSTEM CSS ---
 st.markdown("""
 <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
-    /* Global Typography & Light Theme */
+    /* Global Body & Background */
     html, body, [class*="css"], .stApp {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
         background-color: #F8FAFC !important;
         color: #0F172A !important;
     }
 
-    /* Razorpay Top Navigation Bar */
-    .rzp-topbar {
+    /* Unified Razorpay Sidebar Styling */
+    [data-testid="stSidebar"] {
+        background-color: #FFFFFF !important;
+        border-right: 1px solid #E2E8F0 !important;
+        padding-top: 1rem !important;
+    }
+
+    [data-testid="stSidebar"] * {
+        color: #1E293B !important;
+    }
+
+    /* Top Navigation Header */
+    .rzp-header {
         background-color: #0C1322;
         color: #FFFFFF;
-        padding: 10px 20px;
-        border-radius: 8px 8px 0 0;
+        padding: 12px 24px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         margin: -4rem -4rem 1.5rem -4rem;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+        border-bottom: 1px solid #1E293B;
     }
 
-    .rzp-logo {
-        font-family: 'Plus Jakarta Sans', sans-serif;
-        font-size: 20px;
+    .rzp-logo-text {
+        font-size: 18px;
         font-weight: 800;
         color: #3395FF;
-        letter-spacing: -0.5px;
+        letter-spacing: -0.3px;
         display: flex;
         align-items: center;
         gap: 8px;
     }
-    
-    .rzp-test-pill {
+
+    .rzp-test-badge {
         background-color: #059669;
-        color: #FFFFFF;
+        color: #FFFFFF !important;
         font-size: 11px;
         font-weight: 700;
-        padding: 3px 10px;
-        border-radius: 12px;
+        padding: 4px 10px;
+        border-radius: 9999px;
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    /* White Cards */
+    /* Clean White Razorpay Cards */
     .rzp-card {
         background-color: #FFFFFF;
         border: 1px solid #E2E8F0;
         border-radius: 8px;
         padding: 20px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
         margin-bottom: 16px;
     }
 
     .rzp-card-title {
-        font-size: 13px;
+        font-size: 12px;
         font-weight: 600;
         color: #64748B;
         text-transform: uppercase;
@@ -89,7 +98,7 @@ st.markdown("""
     }
 
     .rzp-card-val {
-        font-size: 26px;
+        font-size: 24px;
         font-weight: 700;
         color: #0F172A;
     }
@@ -115,7 +124,7 @@ st.markdown("""
     .status-escalated { background-color: #FFFBEB; color: #D97706; border: 1px solid #FDE68A; }
     .status-progress { background-color: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
 
-    /* Razorpay Primary Buttons */
+    /* Razorpay Primary Blue Buttons */
     div.stButton > button:first-child {
         background-color: #0066FF !important;
         color: #FFFFFF !important;
@@ -124,48 +133,51 @@ st.markdown("""
         font-weight: 600 !important;
         font-size: 13px !important;
         padding: 8px 16px !important;
-        transition: background-color 0.15s ease !important;
+        transition: all 0.15s ease !important;
     }
     div.stButton > button:first-child:hover {
         background-color: #0052CC !important;
+        box-shadow: 0 2px 4px rgba(0, 102, 255, 0.2) !important;
     }
 
-    /* Expander & Tabs */
-    .stTabs [data-baseweb="tab-list"] {
-        gap: 8px;
-        background-color: transparent;
-        border-bottom: 1px solid #E2E8F0;
-        padding-bottom: 4px;
+    /* Radio Button Navigation in Sidebar */
+    .stRadio > div {
+        gap: 4px;
     }
-    .stTabs [data-baseweb="tab"] {
-        padding: 8px 16px;
-        color: #64748B;
-        font-weight: 600;
-        font-size: 14px;
+    .stRadio label {
+        padding: 8px 12px;
         border-radius: 6px;
+        font-size: 13px !important;
+        font-weight: 500 !important;
+        color: #334155 !important;
+        cursor: pointer;
     }
-    .stTabs [aria-selected="true"] {
-        background-color: #EFF6FF !important;
-        color: #0066FF !important;
+    .stRadio label:hover {
+        background-color: #F1F5F9;
     }
+
+    /* Hide Streamlit Default Header and Watermark */
+    #MainMenu {visibility: hidden;}
+    footer {visibility: hidden;}
+    header {visibility: hidden;}
 </style>
 
 <!-- Razorpay Top Bar Header -->
-<div class="rzp-topbar">
+<div class="rzp-header">
     <div style="display:flex; align-items:center; gap:16px;">
-        <div class="rzp-logo">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+        <div class="rzp-logo-text">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
                 <path d="M12 2L2 7L12 12L22 7L12 2Z" fill="#3395FF"/>
                 <path d="M2 17L12 22L22 17" stroke="#3395FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 <path d="M2 12L12 17L22 12" stroke="#3395FF" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
             </svg>
-            Razorpay <span style="font-weight:400; color:#94A3B8; font-size:16px;">| RecoverIQ</span>
+            Razorpay <span style="font-weight:400; color:#94A3B8; font-size:15px;">| RecoverIQ</span>
         </div>
-        <span class="rzp-test-pill">● Test Mode</span>
+        <span class="rzp-test-badge">● Test Mode</span>
     </div>
-    <div style="font-size:13px; color:#94A3B8; display:flex; gap:16px; align-items:center;">
+    <div style="font-size:13px; color:#94A3B8; display:flex; gap:18px; align-items:center;">
         <span>Track 03: AI Revenue Recovery</span>
-        <div style="background:#1E293B; border-radius:50%; width:28px; height:28px; display:flex; align-items:center; justify-content:center; color:#FFFFFF; font-weight:700; font-size:11px;">HP</div>
+        <div style="background:#1E293B; border-radius:50%; width:30px; height:30px; display:flex; align-items:center; justify-content:center; color:#FFFFFF; font-weight:700; font-size:12px;">HP</div>
     </div>
 </div>
 """, unsafe_allow_html=True)
@@ -223,76 +235,70 @@ def post_api(endpoint: str, params: Dict = None, json_body: Dict = None) -> Any:
         return {}
 
 
-# --- SIDEBAR: LIVE RAZORPAY INTEGRATION ---
+# --- SIDEBAR RAZORPAY NAVIGATION ---
 with st.sidebar:
-    st.markdown("### 💳 Razorpay Test Mode")
-    st.caption("RecoverIQ is actively listening to your Razorpay Test Dashboard webhooks.")
+    st.markdown("#### 💳 RecoverIQ Suite")
 
-    # Live Connection Status Box
-    st.markdown("""
-    <div style="background:#F1F5F9; border:1px solid #CBD5E1; border-radius:8px; padding:12px; margin-bottom:16px;">
-        <div style="font-size:12px; color:#475569; font-weight:600;">WEBHOOK LISTENER</div>
-        <div style="font-size:13px; color:#0F172A; font-weight:700; margin-top:2px;">🟢 Active: <code>/webhooks/razorpay</code></div>
-        <div style="font-size:11px; color:#64748B; margin-top:4px;">Events: <code>payment.failed</code>, <code>payment_link.paid</code></div>
-    </div>
-    """, unsafe_allow_html=True)
+    nav_selection = st.radio(
+        "Navigation",
+        [
+            "🏠 Overview & Analytics",
+            "💳 Payments & Recovery Logs",
+            "⚖️ ROI & Baseline Uplift",
+            "🚨 Human Escalation Desk",
+            "⚙️ Settings & Webhooks",
+        ],
+        label_visibility="collapsed",
+    )
 
-    # Fast Interactive Demo Failure Trigger
-    st.markdown("### 🧪 Quick Test Failure")
+    st.divider()
+
+    st.markdown("##### ⚡ Quick Recovery Trigger")
     st.caption("Trigger an instant test failure to see RecoverIQ intercept and recover it:")
-    
+
     test_scenario = st.selectbox(
-        "Select Failure Type:",
+        "Select Scenario:",
         [
             "1. UPI Bank Timeout (₹1,999)",
             "2. Degraded UPI ➔ Card Link (₹15,000)",
             "3. High-Value Payment Escalation (₹65,000)",
             "4. Recovered Payment (Duplicate Prevention)",
-        ]
+        ],
+        label_visibility="collapsed",
     )
 
-    if st.button("⚡ Trigger Test Failure", type="primary", use_container_width=True):
+    if st.button("⚡ Test Failure Intercept", type="primary", use_container_width=True):
         scenario_idx = int(test_scenario[0]) - 1
-        with st.spinner("Intercepting payment failure & running AI recovery..."):
+        with st.spinner("Intercepting failure & executing recovery..."):
             demo_res = post_api("/demo/scenarios")
             if demo_res and "scenarios" in demo_res:
                 st.session_state["recent_demo_tx"] = demo_res["scenarios"][scenario_idx]
-                st.success(f"✅ Transaction processed via AI Recovery Agent!")
+                st.success("✅ Transaction Intercepted & Recovered!")
                 st.rerun()
 
     st.divider()
-    # Refresh / Sync
-    if st.button("🔄 Refresh Live Dashboard", use_container_width=True):
+    if st.button("🔄 Refresh Data", use_container_width=True):
         st.rerun()
 
     health = fetch_api("/health")
     if health:
-        st.caption(f"🟢 **Backend**: Connected (v{health.get('version', '0.1.0')})")
-        st.caption("🔗 **API Key**: `rzp_test_TWqY...`")
+        st.caption(f"🟢 **API Status**: Online (v{health.get('version', '0.1.0')})")
+        st.caption("🔗 **Webhook**: Active (`/webhooks/razorpay`)")
     else:
-        st.caption("🔴 **Backend Offline**")
-
-
-# --- MAIN RAZORPAY DASHBOARD TABS ---
-tab1, tab2, tab3, tab4 = st.tabs([
-    "📊 Overview & Analytics", 
-    "💳 Payments & Recovery Logs", 
-    "⚖️ ROI & Baseline Uplift", 
-    "🚨 Human Escalation Desk"
-])
+        st.caption("🔴 **API Offline**")
 
 
 # =========================================================================
-# --- TAB 1: OVERVIEW & ANALYTICS ---
+# --- PAGE 1: OVERVIEW & ANALYTICS ---
 # =========================================================================
-with tab1:
-    st.markdown("### Hey Harshit, welcome to RecoverIQ Revenue Recovery")
-    st.caption("Real-time revenue protection and autonomous failure recovery across your payment channels.")
+if nav_selection == "🏠 Overview & Analytics":
+    st.markdown("### Hey Harshit, welcome to RecoverIQ")
+    st.caption("Autonomous revenue protection and AI payment failure recovery.")
 
     metrics = fetch_api("/metrics")
 
     if not metrics or "total_transactions" not in metrics:
-        st.info("No transaction data loaded. Click **'Seed Data'** on the left sidebar to populate test transactions.")
+        st.info("No transaction data loaded. Trigger a test failure from the sidebar or send test webhooks.")
     else:
         tot_tx = metrics.get("total_transactions", 0)
         tot_failed = metrics.get("total_failed_amount_inr", 0.0)
@@ -302,14 +308,14 @@ with tab1:
         esc_count = metrics.get("escalated_count", 0)
         compliance = metrics.get("guardrail_compliance_pct", 100.0)
 
-        # 4 Razorpay-styled Metric Cards
+        # 4 Hero Metric Cards
         c1, c2, c3, c4 = st.columns(4)
         with c1:
             st.markdown(f"""
             <div class="rzp-card">
                 <div class="rzp-card-title">Failed Volume at Risk</div>
                 <div class="rzp-card-val">{format_currency(tot_failed)}</div>
-                <div class="rzp-card-sub">{tot_tx} Failed Transactions</div>
+                <div class="rzp-card-sub">{tot_tx} Failed Ingested</div>
             </div>
             """, unsafe_allow_html=True)
         with c2:
@@ -333,11 +339,11 @@ with tab1:
             <div class="rzp-card">
                 <div class="rzp-card-title">Guardrail Compliance</div>
                 <div class="rzp-card-val" style="color:#D97706;">{compliance:.0f}%</div>
-                <div class="rzp-card-sub">{esc_count} Flagged for Review</div>
+                <div class="rzp-card-sub">{esc_count} Flagged for Human Review</div>
             </div>
             """, unsafe_allow_html=True)
 
-        # Clean Chart Breakdowns
+        # Visual Charts
         col_g1, col_g2 = st.columns(2)
         with col_g1:
             st.markdown("#### 🎯 Recovery Action Breakdown")
@@ -350,7 +356,7 @@ with tab1:
                     "ESCALATE": "#F59E0B",
                     "RETRY": "#3B82F6",
                     "NO_ACTION": "#EF4444",
-                    "PENDING": "#94A3B8"
+                    "PENDING": "#94A3B8",
                 }
                 fig_act = px.pie(
                     names=list(actions.keys()),
@@ -361,7 +367,7 @@ with tab1:
                 )
                 fig_act.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)",
-                    font={'color': "#0F172A", 'family': 'Inter'},
+                    font={"color": "#0F172A", "family": "Inter"},
                     margin=dict(l=10, r=10, t=10, b=10),
                     height=260,
                 )
@@ -376,28 +382,28 @@ with tab1:
                     df_fail,
                     x="Count",
                     y="Category",
-                    orientation='h',
+                    orientation="h",
                     color_discrete_sequence=["#0066FF"],
-                    text="Count"
+                    text="Count",
                 )
                 fig_fail.update_layout(
                     paper_bgcolor="rgba(0,0,0,0)",
                     plot_bgcolor="rgba(0,0,0,0)",
-                    font={'color': "#0F172A", 'family': 'Inter'},
+                    font={"color": "#0F172A", "family": "Inter"},
                     margin=dict(l=10, r=10, t=10, b=10),
                     height=260,
                     xaxis=dict(showgrid=True, gridcolor="#E2E8F0"),
-                    yaxis=dict(showgrid=False)
+                    yaxis=dict(showgrid=False),
                 )
                 st.plotly_chart(fig_fail, use_container_width=True)
 
 
 # =========================================================================
-# --- TAB 2: TRANSACTIONS & DECISION TRACE ---
+# --- PAGE 2: PAYMENTS & RECOVERY LOGS ---
 # =========================================================================
-with tab2:
-    st.markdown("### Payment Transactions & Recovery Logs")
-    st.caption("Search, filter, and inspect AI recovery traces for individual customer transactions.")
+elif nav_selection == "💳 Payments & Recovery Logs":
+    st.markdown("### Payments Ledger & Recovery Decision Traces")
+    st.caption("Inspect individual customer transactions, failure root-causes, and AI-generated messages.")
 
     c_f1, c_f2, c_f3 = st.columns([2, 1, 1])
     with c_f1:
@@ -429,9 +435,9 @@ with tab2:
             with st.expander(f"💳 {tid}  |  {cust}  |  {format_currency(amt)}  |  {method} ({bank})  |  Action: {action}"):
                 c_d1, c_d2 = st.columns(2)
                 with c_d1:
-                    st.markdown("**Customer & Payment Details**")
+                    st.markdown("**Customer & Payment Profile**")
                     st.write(f"- **Customer Name:** {cust}")
-                    st.write(f"- **Segment:** `{tx.get('customer_segment', 'STANDARD')}`")
+                    st.write(f"- **Customer Segment:** `{tx.get('customer_segment', 'STANDARD')}`")
                     st.write(f"- **Amount:** {format_currency(amt)}")
                     st.write(f"- **Method / Bank:** {method} • {bank}")
                 with c_d2:
@@ -441,7 +447,7 @@ with tab2:
                     st.write(f"- **Error Reason:** `{tx.get('error_reason')}`")
                     st.write(f"- **Status:** {get_status_badge(status)}", unsafe_allow_html=True)
 
-                # Fetch and render AI Decision Trace
+                # Fetch AI Decision Trace
                 logs = fetch_api(f"/logs/{tid}")
                 if logs and isinstance(logs, list):
                     st.markdown("---")
@@ -472,11 +478,11 @@ with tab2:
 
 
 # =========================================================================
-# --- TAB 3: BASELINE VS. AI UPLIFT BENCHMARK ---
+# --- PAGE 3: ROI & BASELINE UPLIFT ---
 # =========================================================================
-with tab3:
+elif nav_selection == "⚖️ ROI & Baseline Uplift":
     st.markdown("### Comparative Benchmark: Naive Baseline vs. RecoverIQ AI")
-    st.caption("Empirical demonstration of money recovered and false-action reduction across an identical 50-transaction evaluation batch.")
+    st.caption("Empirical demonstration of money recovered and false-action reduction across an identical evaluation batch.")
 
     if st.button("⚖️ Run Side-by-Side Benchmark", type="primary"):
         with st.spinner("Executing benchmark simulation..."):
@@ -516,30 +522,42 @@ with tab3:
         with col_b1:
             df_r = pd.DataFrame({
                 "Strategy": ["Naive Single-Retry Baseline", "RecoverIQ AI Agent"],
-                "Recovery Rate (%)": [bl.get('recovery_rate_pct', 0), riq.get('recovery_rate_pct', 0)]
+                "Recovery Rate (%)": [bl.get('recovery_rate_pct', 0), riq.get('recovery_rate_pct', 0)],
             })
-            fig_r = px.bar(df_r, x="Strategy", y="Recovery Rate (%)", color="Strategy",
-                           color_discrete_map={"Naive Single-Retry Baseline": "#94A3B8", "RecoverIQ AI Agent": "#10B981"}, text="Recovery Rate (%)")
-            fig_r.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={'color': "#0F172A", 'family': 'Inter'}, showlegend=False, height=280)
+            fig_r = px.bar(
+                df_r,
+                x="Strategy",
+                y="Recovery Rate (%)",
+                color="Strategy",
+                color_discrete_map={"Naive Single-Retry Baseline": "#94A3B8", "RecoverIQ AI Agent": "#10B981"},
+                text="Recovery Rate (%)",
+            )
+            fig_r.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={"color": "#0F172A", "family": "Inter"}, showlegend=False, height=280)
             st.plotly_chart(fig_r, use_container_width=True)
 
         with col_b2:
             df_v = pd.DataFrame({
                 "Strategy": ["Naive Single-Retry Baseline", "RecoverIQ AI Agent"],
-                "Recovered Amount (₹)": [bl.get('recovered_amount_inr', 0), riq.get('recovered_amount_inr', 0)]
+                "Recovered Amount (₹)": [bl.get('recovered_amount_inr', 0), riq.get('recovered_amount_inr', 0)],
             })
-            fig_v = px.bar(df_v, x="Strategy", y="Recovered Amount (₹)", color="Strategy",
-                           color_discrete_map={"Naive Single-Retry Baseline": "#94A3B8", "RecoverIQ AI Agent": "#0066FF"}, text="Recovered Amount (₹)")
-            fig_v.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={'color': "#0F172A", 'family': 'Inter'}, showlegend=False, height=280)
+            fig_v = px.bar(
+                df_v,
+                x="Strategy",
+                y="Recovered Amount (₹)",
+                color="Strategy",
+                color_discrete_map={"Naive Single-Retry Baseline": "#94A3B8", "RecoverIQ AI Agent": "#0066FF"},
+                text="Recovered Amount (₹)",
+            )
+            fig_v.update_layout(paper_bgcolor="rgba(0,0,0,0)", plot_bgcolor="rgba(0,0,0,0)", font={"color": "#0F172A", "family": "Inter"}, showlegend=False, height=280)
             st.plotly_chart(fig_v, use_container_width=True)
 
 
 # =========================================================================
-# --- TAB 4: ESCALATIONS & GUARDRAILS QUEUE ---
+# --- PAGE 4: HUMAN ESCALATION DESK ---
 # =========================================================================
-with tab4:
+elif nav_selection == "🚨 Human Escalation Desk":
     st.markdown("### Human-in-the-Loop Review Desk")
-    st.caption("Transactions flagged by deterministic guardrails (High-Value >₹50,000 or Retry Limits) held for operator approval.")
+    st.caption("Transactions flagged by deterministic safety guardrails (High-Value >₹50,000 or Retry Limits) held for manual approval.")
 
     escalations = fetch_api("/escalations")
 
@@ -579,3 +597,37 @@ with tab4:
                     st.info(f"**Resolution Notes:** {esc.get('resolution_notes', 'N/A')} (Resolved at: {esc.get('resolved_at')})")
     else:
         st.success("🎉 No pending escalations in queue!")
+
+
+# =========================================================================
+# --- PAGE 5: SETTINGS & WEBHOOKS ---
+# =========================================================================
+elif nav_selection == "⚙️ Settings & Webhooks":
+    st.markdown("### Merchant Configuration & Safety Policy Engine")
+    st.caption("Manage Razorpay Test Mode keys, active Webhook listeners, and deterministic safety parameters.")
+
+    col_s1, col_s2 = st.columns(2)
+    with col_s1:
+        st.markdown("#### 🔑 Razorpay API Credentials")
+        st.text_input("Key ID", value="rzp_test_TWqY5RlQkIsPyT", disabled=True)
+        st.text_input("Key Secret", value="••••••••••••••••••••••••", disabled=True)
+        st.caption("Credentials loaded from environment variables (`.env`).")
+
+        st.markdown("#### 🔗 Webhook Configuration")
+        st.text_input("Live Webhook URL Endpoint", value="https://<your-ngrok-url>/webhooks/razorpay", disabled=True)
+        st.markdown("""
+        **Subscribed Webhook Events**:
+        - `payment.failed` ➔ Intercepted & triggers AI recovery.
+        - `payment_link.paid` ➔ Marks transaction as recovered.
+        - `payment.captured` ➔ Settlement reconciliation.
+        """)
+
+    with col_s2:
+        st.markdown("#### 🛡️ Active Safety Guardrails")
+        st.markdown("""
+        1. **Max Automated Retries**: `2 attempts max` (prevents spam and network throttling).
+        2. **High-Value Cap**: `₹50,000 INR` (halts automation and routes to human operator).
+        3. **TRAI Quiet Hours**: `9:00 PM – 8:00 AM IST` (holds outbound communications).
+        4. **Double-Debit Prevention**: Pre-execution ledger verification ensures settled transactions are never charged again (`NO_ACTION`).
+        5. **Idempotency Deduplication**: Atomic caching prevents double-processing on duplicate webhook deliveries.
+        """)
