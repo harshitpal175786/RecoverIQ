@@ -29,12 +29,12 @@ class RecoveryPipeline:
             duration_ms=float(int((time.time() - start_time) * 1000))
         )
 
-    async def process_transaction(self, transaction: Transaction, use_ai: bool = True) -> tuple[Optional[AgentDecision], Optional[GuardrailResult], list[AuditLog]]:
+    async def process_transaction(self, transaction: Transaction, use_ai: bool = True, force: bool = False) -> tuple[Optional[AgentDecision], Optional[GuardrailResult], list[AuditLog]]:
         """Process a single transaction through the full recovery pipeline."""
         audit_logs = []
         
-        # Check duplicate
-        if is_duplicate(transaction.transaction_id):
+        # Check duplicate (allow explicit manual execution with force=True)
+        if not force and is_duplicate(transaction.transaction_id):
             return None, None, []
         mark_processed(transaction.transaction_id)
 

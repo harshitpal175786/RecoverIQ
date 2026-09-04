@@ -319,11 +319,21 @@ function closeDrawer() {
 }
 
 async function executeSingleRecovery(txId) {
-    showToast(`Executing recovery on ${txId}...`);
+    showToast(`Executing AI recovery on ${txId}...`);
     try {
         const res = await fetch(`${API_BASE}/recovery/${txId}/execute`, { method: "POST" });
         const data = await res.json();
-        showToast(`Recovery Executed: ${data.action} (${data.verified_status})`);
+        
+        if (data.decision && data.decision.recommended_action) {
+            const action = data.decision.recommended_action;
+            const status = data.attempt ? data.attempt.verification_status : "EXECUTED";
+            showToast(`✅ Recovery Executed: ${action} (${status})`);
+        } else if (data.message) {
+            showToast(`ℹ️ ${data.message}`);
+        } else {
+            showToast(`✅ Recovery Processed for ${txId}`);
+        }
+        
         closeDrawer();
         loadOverviewMetrics();
         loadTransactions();

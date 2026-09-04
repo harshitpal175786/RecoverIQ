@@ -152,7 +152,7 @@ async def execute_recovery(transaction_id: str = Path(...)):
         simulator = SimulatorExecutor()
         verifier = ActionVerifier()
 
-        decision, guardrail_result, audit_logs = await pipeline.process_transaction(tx)
+        decision, guardrail_result, audit_logs = await pipeline.process_transaction(tx, force=True)
 
         if not decision:
             return {"transaction_id": transaction_id, "message": "Skipped (duplicate or already processed)"}
