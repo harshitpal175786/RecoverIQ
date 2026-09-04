@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
 from contextlib import asynccontextmanager
 from data.db import init_db
-from api.routes import seed, recovery, metrics, transactions, audit, health, webhooks
+from api.routes import seed, recovery, metrics, transactions, audit, health, webhooks, chat
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -34,6 +34,7 @@ app.include_router(recovery.router)
 app.include_router(metrics.router)
 app.include_router(audit.router)
 app.include_router(webhooks.router)
+app.include_router(chat.router)
 
 # Mount Static Frontend
 if os.path.exists("static"):
