@@ -27,6 +27,17 @@ def verify_razorpay_signature(body: bytes, signature: Optional[str], secret: str
     return hmac.compare_digest(expected_signature, signature)
 
 
+@router.get("/razorpay")
+async def razorpay_webhook_info():
+    """Friendly status check when visited directly in a browser."""
+    return {
+        "status": "active",
+        "service": "RecoverIQ Razorpay Webhook Receiver",
+        "events_handled": ["payment.failed", "payment_link.paid", "payment.captured"],
+        "info": "This endpoint is live and listening for HTTP POST webhook events from Razorpay."
+    }
+
+
 @router.post("/razorpay")
 async def razorpay_webhook(
     request: Request,
@@ -81,20 +92,25 @@ async def razorpay_webhook(
             else:
                 cat = FailureCategory.TRANSIENT_DOWNTIME
 
+            # Safely handle notes (Razorpay can send [] or {})
+            notes = payment_entity.get("notes")
+            notes_dict = notes if isinstance(notes, dict) else {}
+            cust_name = notes_dict.get("customer_name") or payment_entity.get("email", "Razorpay Customer")
+
             tx = Transaction(
                 transaction_id=tx_id,
                 order_id=payment_entity.get("order_id"),
                 customer_id=payment_entity.get("customer_id") or f"cust_{tx_id[:8]}",
-                customer_name=payment_entity.get("notes", {}).get("customer_name", "Razorpay Customer"),
+                customer_name=cust_name,
                 customer_email=payment_entity.get("email"),
                 customer_phone=payment_entity.get("contact"),
-                amount_inr=amount_inr,
+                amount_inr=max(1.0, amount_inr),
                 payment_method=method,
-                issuer_bank=payment_entity.get("bank", "HDFC"),
-                psp=payment_entity.get("vpa", "").split("@")[-1].upper() if "@" in payment_entity.get("vpa", "") else "GPAY",
+                issuer_bank=str(payment_entity.get("bank") or "HDFC"),
+                psp=payment_entity.get("vpa", "").split("@")[-1].upper() if "@" in str(payment_entity.get("vpa") or "") else "GPAY",
                 error_code=error_code,
-                error_source=payment_entity.get("error_source", "gateway"),
-                error_step=payment_entity.get("error_step", "payment_authorization"),
+                error_source=payment_entity.get("error_source", "gateway") or "gateway",
+                error_step=payment_entity.get("error_step", "payment_authorization") or "payment_authorization",
                 error_reason=error_reason,
                 error_description=error_desc,
                 failure_category=cat,
