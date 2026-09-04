@@ -14,7 +14,10 @@ async def list_transactions(
     try:
         all_tx = await get_all_transactions()
         if status:
-            all_tx = [t for t in all_tx if t.status == status]
+            if status == TransactionStatus.PENDING_RECOVERY:
+                all_tx = [t for t in all_tx if t.status in [TransactionStatus.FAILED, TransactionStatus.PENDING_RECOVERY, "FAILED", "PENDING_RECOVERY"]]
+            else:
+                all_tx = [t for t in all_tx if t.status == status or getattr(t.status, 'value', str(t.status)) == getattr(status, 'value', str(status))]
             
         return all_tx[offset:offset+limit]
     except Exception as e:
