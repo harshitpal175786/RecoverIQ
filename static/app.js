@@ -14,6 +14,13 @@ let currentEscalations = [];
 let lastSyncedTimestamp = Date.now();
 let activeModalConfirmHandler = null;
 
+function filterTransactionsTable() {
+    if (typeof applyTransactionFilters === "function") {
+        applyTransactionFilters();
+    }
+}
+window.filterTransactionsTable = filterTransactionsTable;
+
 document.addEventListener("DOMContentLoaded", () => {
     initRouting();
     initGlobalShortcuts();

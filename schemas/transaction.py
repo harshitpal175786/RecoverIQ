@@ -67,16 +67,16 @@ class Transaction(BaseModel):
     failed_at: datetime = Field(default_factory=datetime.utcnow)
     
     # Customer context (for AI reasoning)
-    customer_ltv_inr: float = Field(0.0, ge=0)
-    historical_recovery_rate: float = Field(0.5, ge=0.0, le=1.0)
-    churn_risk_score: float = Field(0.5, ge=0.0, le=1.0)
-    preferred_channel: str = Field("WHATSAPP", description="WHATSAPP | SMS | EMAIL | IN_APP")
+    customer_ltv_inr: Optional[float] = Field(0.0, ge=0)
+    historical_recovery_rate: Optional[float] = Field(0.5, ge=0.0, le=1.0)
+    churn_risk_score: Optional[float] = Field(0.5, ge=0.0, le=1.0)
+    preferred_channel: Optional[str] = Field("WHATSAPP", description="WHATSAPP | SMS | EMAIL | IN_APP")
     salary_day_estimate: Optional[int] = Field(None, ge=1, le=31)
-    previous_failures_30d: int = Field(0, ge=0)
+    previous_failures_30d: Optional[int] = Field(0, ge=0)
     
     # Business context
-    business_model: str = Field("SaaS", description="SaaS | E_COMMERCE | SUBSCRIPTION | LENDING")
-    is_recurring: bool = False
+    business_model: Optional[str] = Field("SaaS", description="SaaS | E_COMMERCE | SUBSCRIPTION | LENDING")
+    is_recurring: Optional[bool] = False
     subscription_id: Optional[str] = None
 
     # AI Recovery Results
