@@ -2804,21 +2804,6 @@ function initGenerateBatchModalTrigger() {
 }
 
 function initSettingsView() {
-    const btnToggleSecret = document.getElementById("btnToggleSecret");
-    const inputSecret = document.getElementById("inputSettingsSecret");
-
-    if (btnToggleSecret && inputSecret) {
-        btnToggleSecret.addEventListener("click", () => {
-            if (inputSecret.type === "password") {
-                inputSecret.type = "text";
-                btnToggleSecret.innerText = "🔒 Hide";
-            } else {
-                inputSecret.type = "password";
-                btnToggleSecret.innerText = "👁️ Show";
-            }
-        });
-    }
-
     const btnCheckHealth = document.getElementById("btnCheckHealth");
     const healthBadge = document.getElementById("settingsHealthBadge");
 

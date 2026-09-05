@@ -609,9 +609,9 @@ elif nav_selection == "⚙️ Settings & Webhooks":
     col_s1, col_s2 = st.columns(2)
     with col_s1:
         st.markdown("#### 🔑 Razorpay API Credentials")
-        st.text_input("Key ID", value="rzp_test_TWqY5RlQkIsPyT", disabled=True)
+        st.text_input("Key ID", value="rzp_test_••••••••IsPyT", disabled=True)
         st.text_input("Key Secret", value="••••••••••••••••••••••••", disabled=True)
-        st.caption("Credentials loaded from environment variables (`.env`).")
+        st.caption("🔒 Zero-Exposure Vault: Credentials loaded strictly in backend memory via `.env`.")
 
         st.markdown("#### 🔗 Webhook Configuration")
         st.text_input("Live Webhook URL Endpoint", value="https://<your-ngrok-url>/webhooks/razorpay", disabled=True)

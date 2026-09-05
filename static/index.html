@@ -1181,21 +1181,24 @@
 
                 <div class="settings-grid">
                     <div class="settings-card">
-                        <h3>🔑 Razorpay API Credentials</h3>
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                            <h3 style="margin:0;">🔑 Razorpay API Credentials</h3>
+                            <span class="badge" style="background:#EBF5FF; color:#0066FF; font-weight:700; font-size:11px;">● TEST MODE ACTIVE</span>
+                        </div>
                         <div class="form-group">
                             <label>Key ID</label>
-                            <input type="text" class="rzp-input" value="rzp_test_TWqY5RlQkIsPyT" readonly style="font-family:var(--font-mono); font-size:12px;">
+                            <input type="text" class="rzp-input" value="rzp_test_••••••••IsPyT" readonly style="font-family:var(--font-mono); font-size:12px; letter-spacing:0.5px; background:#F8FAFC; color:#334155;">
                         </div>
                         <div class="form-group">
                             <label>Key Secret</label>
-                            <div style="display:flex; gap:8px;">
-                                <input type="password" id="inputSettingsSecret" class="rzp-input" value="8xL3cbdPfrLRtkumwrGvlO9n" readonly style="font-family:var(--font-mono); font-size:12px;">
-                                <button type="button" id="btnToggleSecret" class="rzp-btn rzp-btn-secondary" style="flex-shrink:0; height:38px; font-size:12px;">
-                                    👁️ Show
-                                </button>
+                            <input type="text" class="rzp-input" value="••••••••••••••••••••••••" readonly style="font-family:var(--font-mono); font-size:14px; letter-spacing:2px; background:#F8FAFC; color:#94A3B8; font-weight:700;">
+                        </div>
+                        <div style="background:#F0FDF4; border:1px solid #BBF7D0; border-radius:6px; padding:10px 12px; display:flex; align-items:flex-start; gap:8px; margin-top:12px;">
+                            <span style="font-size:14px; line-height:1.2;">🔒</span>
+                            <div style="font-size:11px; color:#166534; line-height:1.4;">
+                                <b>Zero-Exposure Vault:</b> API secret is securely loaded into backend memory via <code>.env</code>. Never exposed to client-side DOM or network responses.
                             </div>
                         </div>
-                        <p class="form-help">Loaded securely from <code>.env</code> file into FastAPI backend environment.</p>
                     </div>
 
                     <div class="settings-card">
@@ -1350,6 +1353,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=filter_fix_v5"></script>
+    <script src="/static/app.js?v=secure_vault_v1"></script>
 </body>
 </html>
