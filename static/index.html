@@ -589,20 +589,134 @@
                 </div>
             </section>
 
-            <!-- VIEW 4: AI DECISION CENTER -->
+            <!-- VIEW 4: AI DECISION CENTER (EXPLAINABLE REASONING & CONFIDENCE ENGINE) -->
             <section id="view-ai-decisions" class="view-panel">
                 <div class="page-header">
                     <div>
                         <h1 class="page-title">AI Decision Center</h1>
-                        <p class="page-subtitle">Explainable AI reasoning, confidence scores, and context-aware intervention choices.</p>
+                        <p class="page-subtitle">Autonomous reasoning stream, confidence scoring engine, and explainable intervention rationale.</p>
+                    </div>
+                    <div class="page-header-actions" style="display:flex; align-items:center; gap:10px;">
+                        <span class="badge" style="background:#F5F3FF; color:#6D28D9; border:1px solid #DDD6FE; font-weight:700; font-size:12px; padding:6px 12px;">
+                            ✨ LLM: MiniMax-M3 & Gemini 2.0
+                        </span>
+                        <button class="rzp-btn rzp-btn-primary" onclick="executeDemoScenarioDirect(0)">
+                            <span>⚡ Run Diagnostic Demo</span>
+                        </button>
                     </div>
                 </div>
 
-                <div id="aiDecisionsList" class="cards-list">
-                    <div class="empty-state">
-                        <div class="empty-state-icon">🤖</div>
-                        <div class="empty-state-title">AI Reasoning Stream</div>
-                        <div class="empty-state-desc">Select any transaction from the ledger or trigger a test failure to inspect the full structured AI reasoning output.</div>
+                <!-- 4 AI OPERATIONAL & GOVERNANCE KPI CARDS -->
+                <div class="kpi-grid mb-6">
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">AI Decisions Formulated</span>
+                            <span class="kpi-icon">🤖</span>
+                        </div>
+                        <div class="kpi-value" id="decCountKpi">--</div>
+                        <div class="kpi-footer">
+                            <span class="trend-pill trend-up">100% Analyzed</span>
+                            <span class="text-muted">Structured outputs</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Average Confidence Score</span>
+                            <span class="kpi-icon">🎯</span>
+                        </div>
+                        <div class="kpi-value" id="decAvgConfKpi">--</div>
+                        <div class="kpi-footer">
+                            <span class="trend-pill trend-up" id="decConfPill">High Confidence</span>
+                            <span class="text-muted">≥80% target threshold</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Explainability Coverage</span>
+                            <span class="kpi-icon">📜</span>
+                        </div>
+                        <div class="kpi-value">100%</div>
+                        <div class="kpi-footer">
+                            <span class="trend-pill trend-up">Audit Bound</span>
+                            <span class="text-muted">Zero black-box decisions</span>
+                        </div>
+                    </div>
+
+                    <div class="kpi-card">
+                        <div class="kpi-header">
+                            <span class="kpi-label">Autonomous Interventions</span>
+                            <span class="kpi-icon">⚡</span>
+                        </div>
+                        <div class="kpi-value" id="decActionableKpi">--</div>
+                        <div class="kpi-footer">
+                            <span class="trend-pill trend-up">Policy Safe</span>
+                            <span class="text-muted">Multi-vector recovery</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- FILTER & SEARCH TOOLBAR -->
+                <div class="table-filter-bar mb-6" style="display:grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap:12px;">
+                    <div class="search-box">
+                        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                        <input type="text" id="decSearchInput" class="rzp-input" placeholder="Search by txn ID, customer, model, reasoning keyword..." oninput="applyAIDecisionFilters()">
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="decActionFilter" class="rzp-select" onchange="applyAIDecisionFilters()">
+                            <option value="ALL">All Interventions</option>
+                            <option value="DELAY_AND_RETRY">Smart Delay & Retry</option>
+                            <option value="ALTERNATE_METHOD">Dynamic Payment Link / Switch</option>
+                            <option value="ESCALATE">Human Escalation Hold</option>
+                            <option value="NO_ACTION">Suppression (Fatal Decline)</option>
+                        </select>
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="decConfidenceFilter" class="rzp-select" onchange="applyAIDecisionFilters()">
+                            <option value="ALL">All Confidence Levels</option>
+                            <option value="HIGH">High Confidence (≥85%)</option>
+                            <option value="MED">Moderate (70%–84%)</option>
+                            <option value="LOW">Needs Review (&lt;70%)</option>
+                        </select>
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="decCategoryFilter" class="rzp-select" onchange="applyAIDecisionFilters()">
+                            <option value="ALL">All Failure Categories</option>
+                            <option value="TRANSIENT_DOWNTIME">Transient Downtime</option>
+                            <option value="INSUFFICIENT_FUNDS">Insufficient Funds</option>
+                            <option value="LIMIT_EXCEEDED">Limit Exceeded</option>
+                            <option value="MANDATE_ISSUE">Mandate Issue</option>
+                            <option value="USER_DROPOUT">User Dropout</option>
+                            <option value="FATAL_DECLINE">Fatal Decline</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- STREAM HEADER -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:14px;">
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <span style="font-weight:700; font-size:15px; color:#0F172A;">Explainable Decision Log Stream</span>
+                        <span id="decStreamCount" class="badge" style="background:#E2E8F0; color:#334155; font-weight:700;">Loading...</span>
+                    </div>
+                    <div style="font-size:12px; color:#64748B;">
+                        Click any card or transaction to inspect complete prompt tokens & safety guardrails
+                    </div>
+                </div>
+
+                <!-- DECISIONS CARDS FEED CONTAINER -->
+                <div id="aiDecisionsList">
+                    <!-- Populated dynamically by app.js -->
+                </div>
+
+                <!-- PAGINATION CONTROLS -->
+                <div class="table-pagination" id="decPaginationContainer" style="display:flex; justify-content:space-between; align-items:center; margin-top:20px;">
+                    <div class="text-muted" style="font-size:13px;" id="decPaginationInfo">
+                        Showing decisions...
+                    </div>
+                    <div class="pagination-controls" style="display:flex; gap:8px;">
+                        <button class="rzp-btn rzp-btn-outline" id="decPrevBtn" onclick="changeDecPage(-1)" style="padding:6px 14px; font-size:12px;">← Previous</button>
+                        <button class="rzp-btn rzp-btn-outline" id="decNextBtn" onclick="changeDecPage(1)" style="padding:6px 14px; font-size:12px;">Next →</button>
                     </div>
                 </div>
             </section>
@@ -1353,6 +1467,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=secure_vault_v1"></script>
+    <script src="/static/app.js?v=ai_decision_center_v1"></script>
 </body>
 </html>

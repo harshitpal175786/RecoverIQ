@@ -79,6 +79,11 @@ class Transaction(BaseModel):
     is_recurring: bool = False
     subscription_id: Optional[str] = None
 
+    # AI Recovery Results
+    recovery_action: Optional[str] = None
+    recovered_amount_inr: Optional[float] = 0.0
+    recovery_decision_json: Optional[str] = None
+
 class TransactionBatch(BaseModel):
     """A batch of transactions for evaluation."""
     transactions: list[Transaction]
