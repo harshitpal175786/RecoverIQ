@@ -131,7 +131,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
-    document.getElementById("btnRunBenchmark").addEventListener("click", runBenchmark);
+    document.getElementById("btnRunBenchmark")?.addEventListener("click", runBenchmark);
+    document.getElementById("bmBatchSizeSelect")?.addEventListener("change", (e) => {
+        const count = e.target.value;
+        showToast(`Running comparative benchmark for batch: ${count} transactions...`, "info");
+        runBenchmark();
+    });
     document.getElementById("btnDrawerClose").addEventListener("click", closeDrawer);
     
     // Backdrop click to close drawer
@@ -874,7 +879,7 @@ async function loadTransactions() {
                 </tr>
             `).join("");
         }
-        const res = await fetch(`${API_BASE}/transactions?limit=250`);
+        const res = await fetch(`${API_BASE}/transactions?limit=1000`);
         currentTransactions = await res.json();
         applyTransactionFilters();
         filterRecoveryQueueTable();
@@ -888,37 +893,82 @@ async function loadTransactions() {
 
 function applyTransactionFilters() {
     const q = (document.getElementById("txSearchInput")?.value || "").toLowerCase().trim();
-    const st = document.getElementById("txStatusFilter")?.value || "ALL";
-    const dateRange = document.getElementById("txDateFilter")?.value || "ALL";
-    const method = document.getElementById("txMethodFilter")?.value || "ALL";
+    const st = (document.getElementById("txStatusFilter")?.value || "ALL").toUpperCase();
+    const dateRange = (document.getElementById("txDateFilter")?.value || "ALL").toLowerCase();
+    const method = (document.getElementById("txMethodFilter")?.value || "ALL").toUpperCase();
     const cat = document.getElementById("txCategoryFilter")?.value || "ALL";
 
     const now = new Date();
     const msInDay = 24 * 60 * 60 * 1000;
 
     txFilteredList = currentTransactions.filter(t => {
+        // Query search
         const matchesQuery = !q || 
             (t.transaction_id && t.transaction_id.toLowerCase().includes(q)) || 
             (t.customer_name && t.customer_name.toLowerCase().includes(q)) ||
             (t.customer_email && t.customer_email.toLowerCase().includes(q)) ||
             (t.customer_phone && String(t.customer_phone).includes(q)) ||
             (t.issuer_bank && t.issuer_bank.toLowerCase().includes(q)) ||
-            (t.error_code && t.error_code.toLowerCase().includes(q));
+            (t.error_code && t.error_code.toLowerCase().includes(q)) ||
+            (t.failure_reason && t.failure_reason.toLowerCase().includes(q));
 
-        const matchesStatus = (st === "ALL" || t.status === st);
-        const matchesMethod = (method === "ALL" || (t.payment_method && t.payment_method.toLowerCase() === method.toLowerCase()));
-        const matchesCat = (cat === "ALL" || t.failure_category === cat);
+        // Status matching
+        let matchesStatus = (st === "ALL");
+        if (!matchesStatus && t.status) {
+            const s = String(t.status).toUpperCase();
+            if (st === "FAILED") {
+                matchesStatus = (s === "FAILED" || s === "PENDING" || s === "PENDING_RECOVERY");
+            } else if (st === "RECOVERED") {
+                matchesStatus = (s === "RECOVERED" || s === "SUCCESS" || s === "VERIFIED_SUCCESS");
+            } else if (st === "ESCALATED") {
+                matchesStatus = (s === "ESCALATED");
+            } else if (st === "IN_PROGRESS") {
+                matchesStatus = (s === "RECOVERY_IN_PROGRESS" || s === "IN_FLIGHT");
+            } else if (st === "ABANDONED") {
+                matchesStatus = (s === "ABANDONED");
+            } else {
+                matchesStatus = (s === st);
+            }
+        }
 
+        // Method matching (handles UPI_INTENT, CREDIT_CARD, etc.)
+        let matchesMethod = (method === "ALL");
+        if (!matchesMethod && t.payment_method) {
+            const pm = String(t.payment_method).toUpperCase();
+            if (method === "UPI") {
+                matchesMethod = pm.startsWith("UPI");
+            } else if (method === "CARD") {
+                matchesMethod = pm.includes("CARD");
+            } else if (method === "NETBANKING") {
+                matchesMethod = pm.includes("NETBANKING") || pm.includes("NACH");
+            } else {
+                matchesMethod = pm.includes(method);
+            }
+        }
+
+        // Category matching
+        let matchesCat = (cat === "ALL");
+        if (!matchesCat && t.failure_category) {
+            const c = typeof t.failure_category === "object" ? t.failure_category.value : t.failure_category;
+            matchesCat = (c === cat);
+        }
+
+        // Date range matching
         let matchesDate = true;
-        if (dateRange !== "ALL" && t.created_at) {
-            const txDate = new Date(t.created_at);
-            const diffMs = now - txDate;
-            if (dateRange === "today") {
-                matchesDate = diffMs <= msInDay;
-            } else if (dateRange === "7d") {
-                matchesDate = diffMs <= 7 * msInDay;
-            } else if (dateRange === "30d") {
-                matchesDate = diffMs <= 30 * msInDay;
+        if (dateRange !== "all" && t.created_at) {
+            const txDateStr = String(t.created_at).replace(" ", "T");
+            const txDate = new Date(txDateStr);
+            if (!isNaN(txDate.getTime())) {
+                const diffMs = now.getTime() - txDate.getTime();
+                if (dateRange === "today") {
+                    const isSameDay = txDate.toDateString() === now.toDateString();
+                    const isWithin24h = Math.abs(diffMs) <= msInDay;
+                    matchesDate = isSameDay || isWithin24h;
+                } else if (dateRange === "7d") {
+                    matchesDate = diffMs <= 7 * msInDay;
+                } else if (dateRange === "30d") {
+                    matchesDate = diffMs <= 30 * msInDay;
+                }
             }
         }
 
@@ -928,6 +978,8 @@ function applyTransactionFilters() {
     txCurrentPage = 1;
     renderPaginatedTransactions();
 }
+window.applyTransactionFilters = applyTransactionFilters;
+window.runBenchmark = runBenchmark;
 
 function renderPaginatedTransactions() {
     const tbody = document.getElementById("txTableBody");
@@ -987,7 +1039,7 @@ function renderPaginatedTransactions() {
 
 function filterRecoveryQueueTable() {
     const q = (document.getElementById("rqSearchInput")?.value || "").toLowerCase().trim();
-    const method = document.getElementById("rqMethodFilter")?.value || "ALL";
+    const method = (document.getElementById("rqMethodFilter")?.value || "ALL").toUpperCase();
     const action = document.getElementById("rqActionFilter")?.value || "ALL";
 
     const inFlight = currentTransactions.filter(t => t.status === "FAILED" || t.status === "PENDING_RECOVERY");
@@ -995,8 +1047,26 @@ function filterRecoveryQueueTable() {
     const filtered = inFlight.filter(t => {
         const matchesQuery = !q || 
             (t.transaction_id && t.transaction_id.toLowerCase().includes(q)) || 
-            (t.customer_name && t.customer_name.toLowerCase().includes(q));
-        const matchesMethod = (method === "ALL" || (t.payment_method && t.payment_method.toLowerCase() === method.toLowerCase()));
+            (t.customer_name && t.customer_name.toLowerCase().includes(q)) ||
+            (t.customer_email && t.customer_email.toLowerCase().includes(q)) ||
+            (t.customer_phone && String(t.customer_phone).includes(q)) ||
+            (t.issuer_bank && t.issuer_bank.toLowerCase().includes(q)) ||
+            (t.failure_reason && t.failure_reason.toLowerCase().includes(q));
+
+        let matchesMethod = (method === "ALL");
+        if (!matchesMethod && t.payment_method) {
+            const pm = String(t.payment_method).toUpperCase();
+            if (method === "UPI") {
+                matchesMethod = pm.startsWith("UPI");
+            } else if (method === "CARD") {
+                matchesMethod = pm.includes("CARD");
+            } else if (method === "NETBANKING") {
+                matchesMethod = pm.includes("NETBANKING") || pm.includes("NACH");
+            } else {
+                matchesMethod = pm.includes(method);
+            }
+        }
+
         const matchesAction = (action === "ALL" || t.recovery_action === action);
         return matchesQuery && matchesMethod && matchesAction;
     });

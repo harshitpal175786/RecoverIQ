@@ -462,9 +462,9 @@
                     <div class="filter-dropdown">
                         <select id="rqMethodFilter" class="rzp-select">
                             <option value="ALL">All Payment Methods</option>
-                            <option value="upi">UPI</option>
-                            <option value="card">Card</option>
-                            <option value="netbanking">Netbanking</option>
+                            <option value="UPI">UPI (Collect/Intent/Autopay)</option>
+                            <option value="CARD">Cards (Debit & Credit)</option>
+                            <option value="NETBANKING">Netbanking / eNACH</option>
                         </select>
                     </div>
                     <div class="filter-dropdown">
@@ -520,6 +520,8 @@
                             <option value="FAILED">Failed</option>
                             <option value="RECOVERED">Recovered</option>
                             <option value="ESCALATED">Escalated</option>
+                            <option value="IN_PROGRESS">In Progress</option>
+                            <option value="ABANDONED">Abandoned</option>
                         </select>
                     </div>
                     <div class="filter-dropdown">
@@ -533,9 +535,9 @@
                     <div class="filter-dropdown">
                         <select id="txMethodFilter" class="rzp-select">
                             <option value="ALL">All Methods</option>
-                            <option value="upi">UPI</option>
-                            <option value="card">Card</option>
-                            <option value="netbanking">Netbanking</option>
+                            <option value="UPI">UPI (Collect/Intent/Autopay)</option>
+                            <option value="CARD">Cards (Debit & Credit)</option>
+                            <option value="NETBANKING">Netbanking / eNACH</option>
                         </select>
                     </div>
                     <div class="filter-dropdown">
@@ -613,7 +615,7 @@
                         <p class="page-subtitle">Empirical head-to-head evaluation demonstrating revenue uplift and false-action elimination over blind single-retry loops.</p>
                     </div>
                     <div class="page-header-actions" style="display:flex; align-items:center; gap:10px;">
-                        <select id="bmBatchSizeSelect" class="rzp-select" style="margin-bottom:0; width:auto; padding:7px 12px; font-size:12px; font-weight:600;">
+                        <select id="bmBatchSizeSelect" class="rzp-select" style="margin-bottom:0; width:auto; padding:7px 12px; font-size:12px; font-weight:600;" onchange="window.runBenchmark && window.runBenchmark()">
                             <option value="25">Batch: 25 Transactions</option>
                             <option value="50" selected>Batch: 50 Transactions</option>
                             <option value="100">Batch: 100 Transactions</option>
