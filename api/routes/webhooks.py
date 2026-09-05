@@ -8,7 +8,7 @@ from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, Request, Header, HTTPException
 from config import get_settings
-from schemas.transaction import Transaction, PaymentMethod, FailureCategory, CustomerSegment
+from schemas.transaction import Transaction, PaymentMethod, FailureCategory, CustomerSegment, TransactionStatus
 from data.db import save_transaction, update_transaction_status, save_recovery_attempt
 from agent.pipeline import RecoveryPipeline
 from execution.simulator import SimulatorExecutor
