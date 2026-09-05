@@ -40,14 +40,24 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const dateSelect = document.getElementById("overviewDateRange");
     if (dateSelect) {
-        dateSelect.addEventListener("change", (e) => {
-            showToast(`Filtering metrics by range: ${e.target.options[e.target.selectedIndex].text}`, "info");
-            syncAllData();
+        dateSelect.addEventListener("change", async (e) => {
+            const range = e.target.value;
+            const label = e.target.options[e.target.selectedIndex].text;
+            showToast(`Filtering metrics for: ${label}`, "info");
+            await loadOverviewMetrics(range);
         });
     }
 
-    document.getElementById("txSearchInput").addEventListener("input", applyTransactionFilters);
-    document.getElementById("txStatusFilter").addEventListener("change", applyTransactionFilters);
+    window.overviewDateRangeChanged = async function(val) {
+        const select = document.getElementById("overviewDateRange");
+        const label = select ? select.options[select.selectedIndex]?.text : val;
+        showToast(`Filtering metrics for: ${label}`, "info");
+        await loadOverviewMetrics(val);
+    };
+
+    document.getElementById("txSearchInput")?.addEventListener("input", applyTransactionFilters);
+    document.getElementById("txStatusFilter")?.addEventListener("change", applyTransactionFilters);
+    document.getElementById("txDateFilter")?.addEventListener("change", applyTransactionFilters);
     document.getElementById("txMethodFilter")?.addEventListener("change", applyTransactionFilters);
     document.getElementById("txCategoryFilter")?.addEventListener("change", applyTransactionFilters);
     
@@ -513,55 +523,80 @@ function closeModal() {
 // =========================================================================
 let currentActionDistribution = {};
 
-async function loadOverviewMetrics() {
+async function loadOverviewMetrics(rangeOverride = null) {
     try {
-        const res = await fetch(`${API_BASE}/metrics`);
+        const dateSelect = document.getElementById("overviewDateRange");
+        const range = rangeOverride || (dateSelect ? dateSelect.value : "7d");
+
+        const kpiAmt = document.getElementById("kpiFailedAmount");
+        if (rangeOverride && kpiAmt) {
+            kpiAmt.style.transition = "opacity 0.2s ease";
+            kpiAmt.style.opacity = "0.5";
+        }
+
+        const res = await fetch(`${API_BASE}/metrics?range=${encodeURIComponent(range)}`);
         const data = await res.json();
 
-        if (!data || !data.total_transactions) return;
+        if (kpiAmt) kpiAmt.style.opacity = "1";
+
+        if (!data) return;
 
         currentActionDistribution = data.action_distribution || {};
 
-        // 5 Primary KPI Cards
-        document.getElementById("kpiFailedAmount").innerText = formatCurrency(data.total_failed_amount_inr);
-        document.getElementById("kpiFailedCount").innerText = `${data.total_transactions} failed transactions`;
+        const totalTx = data.total_transactions || 0;
+        const recCount = data.recovered_count || 0;
+        const recRate = typeof data.recovery_rate_pct === "number" ? data.recovery_rate_pct : 0;
+        const rangeLabel = range === "today" ? "today" : (range === "7d" ? "last 7 days" : "last 30 days");
 
-        document.getElementById("kpiRecoveredAmount").innerText = `+${formatCurrency(data.recovered_amount_inr)}`;
-        document.getElementById("kpiRecoveredCount").innerText = `${data.recovered_count} transactions won back`;
+        // 5 Primary KPI Cards
+        const failedAmtEl = document.getElementById("kpiFailedAmount");
+        if (failedAmtEl) failedAmtEl.innerText = formatCurrency(data.total_failed_amount_inr || 0);
+
+        const failedCntEl = document.getElementById("kpiFailedCount");
+        if (failedCntEl) failedCntEl.innerText = `${totalTx} failed transactions (${rangeLabel})`;
+
+        const recAmtEl = document.getElementById("kpiRecoveredAmount");
+        if (recAmtEl) recAmtEl.innerText = `+${formatCurrency(data.recovered_amount_inr || 0)}`;
+
+        const recCntEl = document.getElementById("kpiRecoveredCount");
+        if (recCntEl) recCntEl.innerText = `${recCount} transactions won back`;
 
         const pendingEl = document.getElementById("kpiPendingCount");
-        if (pendingEl) pendingEl.innerText = data.pending_count !== undefined ? data.pending_count : (data.total_transactions - data.recovered_count - data.escalated_count);
+        if (pendingEl) pendingEl.innerText = data.pending_count !== undefined ? data.pending_count : (totalTx - recCount - (data.escalated_count || 0));
 
         const escEl = document.getElementById("kpiEscalatedCount");
         if (escEl) escEl.innerText = data.escalated_count !== undefined ? data.escalated_count : 0;
 
-        document.getElementById("kpiRecoveryRate").innerText = `${data.recovery_rate_pct.toFixed(1)}%`;
-        document.getElementById("kpiRateSub").innerText = `${data.recovered_count} of ${data.total_transactions} recovered`;
+        const recRateEl = document.getElementById("kpiRecoveryRate");
+        if (recRateEl) recRateEl.innerText = `${recRate.toFixed(1)}%`;
+
+        const rateSubEl = document.getElementById("kpiRateSub");
+        if (rateSubEl) rateSubEl.innerText = `${recCount} of ${totalTx} recovered`;
 
         // 5-Stage AI Recovery Funnel
         const fnRiskAmt = document.getElementById("fnRiskAmt");
-        if (fnRiskAmt) fnRiskAmt.innerText = formatCurrency(data.total_failed_amount_inr);
+        if (fnRiskAmt) fnRiskAmt.innerText = formatCurrency(data.total_failed_amount_inr || 0);
         const fnRiskCount = document.getElementById("fnRiskCount");
-        if (fnRiskCount) fnRiskCount.innerText = `${data.total_transactions} failed transactions`;
+        if (fnRiskCount) fnRiskCount.innerText = `${totalTx} failed transactions`;
 
         const fnDiagCount = document.getElementById("fnDiagCount");
-        if (fnDiagCount) fnDiagCount.innerText = data.total_transactions;
+        if (fnDiagCount) fnDiagCount.innerText = totalTx;
 
         const fnActionCount = document.getElementById("fnActionCount");
-        if (fnActionCount) fnActionCount.innerText = data.actions_attempted || data.total_transactions;
+        if (fnActionCount) fnActionCount.innerText = data.actions_attempted || totalTx;
 
         const fnExecCount = document.getElementById("fnExecCount");
         if (fnExecCount) fnExecCount.innerText = data.actions_attempted || 0;
 
         const fnRecAmt = document.getElementById("fnRecAmt");
-        if (fnRecAmt) fnRecAmt.innerText = `+${formatCurrency(data.recovered_amount_inr)}`;
+        if (fnRecAmt) fnRecAmt.innerText = `+${formatCurrency(data.recovered_amount_inr || 0)}`;
         const fnRecCount = document.getElementById("fnRecCount");
-        if (fnRecCount) fnRecCount.innerText = `${data.recovered_count} settled & verified`;
+        if (fnRecCount) fnRecCount.innerText = `${recCount} settled & verified`;
         const fnRecRate = document.getElementById("fnRecRate");
-        if (fnRecRate) fnRecRate.innerText = `${data.recovery_rate_pct.toFixed(1)}%`;
+        if (fnRecRate) fnRecRate.innerText = `${recRate.toFixed(1)}%`;
 
         const badgeEl = document.getElementById("fnFunnelEfficiencyBadge");
-        if (badgeEl) badgeEl.innerText = `${data.guardrail_compliance_pct.toFixed(0)}% Guardrail Enforced`;
+        if (badgeEl) badgeEl.innerText = `${(data.guardrail_compliance_pct || 100).toFixed(0)}% Guardrail Enforced`;
 
         renderActionsChart(currentActionDistribution);
         renderFailureChart(data.failure_category_distribution || {});
@@ -801,6 +836,8 @@ function resetTxFilters() {
     if (st) st.value = "ALL";
     const m = document.getElementById("txMethodFilter");
     if (m) m.value = "ALL";
+    const d = document.getElementById("txDateFilter");
+    if (d) d.value = "ALL";
     const c = document.getElementById("txCategoryFilter");
     if (c) c.value = "ALL";
     const gs = document.getElementById("globalSearchInput");
@@ -837,7 +874,7 @@ async function loadTransactions() {
                 </tr>
             `).join("");
         }
-        const res = await fetch(`${API_BASE}/transactions?limit=100`);
+        const res = await fetch(`${API_BASE}/transactions?limit=250`);
         currentTransactions = await res.json();
         applyTransactionFilters();
         filterRecoveryQueueTable();
@@ -852,13 +889,19 @@ async function loadTransactions() {
 function applyTransactionFilters() {
     const q = (document.getElementById("txSearchInput")?.value || "").toLowerCase().trim();
     const st = document.getElementById("txStatusFilter")?.value || "ALL";
+    const dateRange = document.getElementById("txDateFilter")?.value || "ALL";
     const method = document.getElementById("txMethodFilter")?.value || "ALL";
     const cat = document.getElementById("txCategoryFilter")?.value || "ALL";
+
+    const now = new Date();
+    const msInDay = 24 * 60 * 60 * 1000;
 
     txFilteredList = currentTransactions.filter(t => {
         const matchesQuery = !q || 
             (t.transaction_id && t.transaction_id.toLowerCase().includes(q)) || 
             (t.customer_name && t.customer_name.toLowerCase().includes(q)) ||
+            (t.customer_email && t.customer_email.toLowerCase().includes(q)) ||
+            (t.customer_phone && String(t.customer_phone).includes(q)) ||
             (t.issuer_bank && t.issuer_bank.toLowerCase().includes(q)) ||
             (t.error_code && t.error_code.toLowerCase().includes(q));
 
@@ -866,7 +909,20 @@ function applyTransactionFilters() {
         const matchesMethod = (method === "ALL" || (t.payment_method && t.payment_method.toLowerCase() === method.toLowerCase()));
         const matchesCat = (cat === "ALL" || t.failure_category === cat);
 
-        return matchesQuery && matchesStatus && matchesMethod && matchesCat;
+        let matchesDate = true;
+        if (dateRange !== "ALL" && t.created_at) {
+            const txDate = new Date(t.created_at);
+            const diffMs = now - txDate;
+            if (dateRange === "today") {
+                matchesDate = diffMs <= msInDay;
+            } else if (dateRange === "7d") {
+                matchesDate = diffMs <= 7 * msInDay;
+            } else if (dateRange === "30d") {
+                matchesDate = diffMs <= 30 * msInDay;
+            }
+        }
+
+        return matchesQuery && matchesStatus && matchesMethod && matchesCat && matchesDate;
     });
 
     txCurrentPage = 1;

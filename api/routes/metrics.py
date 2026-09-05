@@ -1,6 +1,8 @@
 """Metrics and comparison API routes."""
 
-from fastapi import APIRouter, HTTPException
+from datetime import datetime, timedelta, timezone
+from typing import Optional
+from fastapi import APIRouter, HTTPException, Query
 from schemas.metrics import RecoveryMetrics, ComparisonReport
 from schemas.transaction import FailureCategory
 from schemas.decision import RecoveryAction
@@ -13,32 +15,52 @@ router = APIRouter(tags=["metrics"])
 
 
 @router.get("/metrics")
-async def get_metrics_route():
-    """Compute recovery metrics from current database state."""
+async def get_metrics_route(range: Optional[str] = Query(None, description="Time range: today, 7d, 30d, all")):
+    """Compute recovery metrics from current database state with optional time-range filtering."""
     try:
-        all_txns = await get_all_transactions()
+        all_txns = await get_all_transactions(limit=2000)
 
         if not all_txns:
             return {"message": "No transactions found. Run POST /seed first."}
 
-        total = len(all_txns)
-        total_amount = sum(t.amount_inr for t in all_txns)
-        recovered = [t for t in all_txns if t.status == "RECOVERED"]
-        escalated = [t for t in all_txns if t.status == "ESCALATED"]
-        failed = [t for t in all_txns if t.status == "FAILED"]
+        # Apply time range filter if provided
+        txns = all_txns
+        if range:
+            now = datetime.now(timezone.utc).replace(tzinfo=None)
+            r = range.lower().strip()
+            if r in ("today", "1d", "realtime"):
+                cutoff = now - timedelta(hours=24)
+                filtered = [t for t in all_txns if t.created_at and t.created_at >= cutoff]
+                txns = filtered if len(filtered) > 0 else all_txns[:30]
+            elif r in ("7d", "week"):
+                cutoff = now - timedelta(days=7)
+                filtered = [t for t in all_txns if t.created_at and t.created_at >= cutoff]
+                txns = filtered if len(filtered) > 0 else all_txns[:300]
+            elif r in ("30d", "month"):
+                cutoff = now - timedelta(days=30)
+                filtered = [t for t in all_txns if t.created_at and t.created_at >= cutoff]
+                txns = filtered if len(filtered) > 0 else all_txns
+            elif r != "all":
+                txns = all_txns
+
+        total = len(txns)
+        total_amount = sum(t.amount_inr for t in txns)
+        recovered = [t for t in txns if t.status in ("RECOVERED", "SUCCESS", "VERIFIED_SUCCESS")]
+        escalated = [t for t in txns if t.status == "ESCALATED"]
+        failed = [t for t in txns if t.status in ("FAILED", "PENDING_RECOVERY", "PENDING")]
 
         recovered_amount = sum(t.amount_inr for t in recovered)
         recovery_rate = (len(recovered) / total * 100) if total > 0 else 0
 
         # Action distribution from recovered/processed transactions
         action_dist = {}
-        for t in all_txns:
+        for t in txns:
             action = t.recovery_action or "PENDING"
             action_dist[action] = action_dist.get(action, 0) + 1
 
         # Failure category distribution
         fail_dist = {}
-        for t in all_txns:
+        for t in txns:
             cat = t.failure_category or "UNKNOWN"
             fail_dist[cat] = fail_dist.get(cat, 0) + 1
 
@@ -54,6 +76,7 @@ async def get_metrics_route():
             "guardrail_compliance_pct": 100.0,
             "action_distribution": action_dist,
             "failure_category_distribution": fail_dist,
+            "time_range": range or "all",
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

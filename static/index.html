@@ -172,7 +172,7 @@
                         <p class="page-subtitle">Find revenue that's slipping away and win it back with autonomous AI reasoning.</p>
                     </div>
                     <div class="header-actions">
-                        <select id="overviewDateRange" class="rzp-select" style="margin-bottom:0; width:auto; font-weight:500;">
+                        <select id="overviewDateRange" class="rzp-select" style="margin-bottom:0; width:auto; font-weight:500;" onchange="window.overviewDateRangeChanged && window.overviewDateRangeChanged(this.value)">
                             <option value="today">Today (Realtime)</option>
                             <option value="7d" selected>Last 7 Days</option>
                             <option value="30d">Last 30 Days</option>
@@ -520,6 +520,14 @@
                             <option value="FAILED">Failed</option>
                             <option value="RECOVERED">Recovered</option>
                             <option value="ESCALATED">Escalated</option>
+                        </select>
+                    </div>
+                    <div class="filter-dropdown">
+                        <select id="txDateFilter" class="rzp-select">
+                            <option value="ALL">All Time</option>
+                            <option value="today">Today</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
                         </select>
                     </div>
                     <div class="filter-dropdown">
@@ -1340,6 +1348,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js"></script>
+    <script src="/static/app.js?v=filter_fix_v5"></script>
 </body>
 </html>
