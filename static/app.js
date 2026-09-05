@@ -265,20 +265,6 @@ function initMobileDrawer() {
 function initGlobalShortcuts() {
     const searchInput = document.getElementById("globalSearchInput");
 
-    document.addEventListener("keydown", (e) => {
-        // Cmd/Ctrl + K or "/" to focus search
-        if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === "k") {
-            e.preventDefault();
-            if (searchInput) searchInput.focus();
-        } else if (e.key === "/" && document.activeElement.tagName !== "INPUT") {
-            e.preventDefault();
-            if (searchInput) searchInput.focus();
-        } else if (e.key.toLowerCase() === "c" && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
-            e.preventDefault();
-            toggleAICopilot();
-        }
-    });
-
     if (searchInput) {
         searchInput.addEventListener("input", (e) => {
             const q = e.target.value.toLowerCase().trim();
@@ -2856,13 +2842,6 @@ function initJudgeDemoExperience() {
             dock.classList.remove("open");
         });
     }
-
-    // Keyboard shortcut: Press 'D' or 'd' to toggle quick dock
-    document.addEventListener("keydown", (e) => {
-        if ((e.key === "d" || e.key === "D") && !["INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)) {
-            if (dock) dock.classList.toggle("open");
-        }
-    });
 
     // Close dock on route click
     document.querySelectorAll(".dock-view-btn").forEach(btn => {

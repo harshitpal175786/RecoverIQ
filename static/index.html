@@ -37,7 +37,6 @@
             <div class="search-box" id="globalSearchTrigger">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#94A3B8" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
                 <input type="text" id="globalSearchInput" placeholder="Search payments, customers, failure codes...">
-                <kbd class="search-shortcut">⌘K</kbd>
             </div>
             <div class="test-mode-toggle" title="Operating in Razorpay Sandbox environment">
                 <span class="toggle-dot"></span>
@@ -50,7 +49,7 @@
                 <span class="freshness-dot"></span>
                 <span id="freshnessText">Synced just now</span>
             </div>
-            <button id="btnOpenCopilotTop" class="topbar-demo-btn copilot-topbar-btn" title="Open AI Recovery Copilot (Press 'C')">
+            <button id="btnOpenCopilotTop" class="topbar-demo-btn copilot-topbar-btn" title="Open AI Recovery Copilot">
                 <span style="font-size:14px;">✨</span>
                 <span>AI Copilot</span>
             </button>
@@ -1382,11 +1381,10 @@
     <!-- FLOATING AI RECOVERY COPILOT WIDGET -->
     <div id="aiCopilotWidget" class="ai-copilot-widget">
         <!-- Launcher Trigger Button -->
-        <button class="copilot-toggle-btn" id="btnToggleCopilot" title="Toggle AI Recovery Copilot (Press 'C')">
+        <button class="copilot-toggle-btn" id="btnToggleCopilot" title="Toggle AI Recovery Copilot">
             <span class="copilot-icon-pulse">✨</span>
             <span class="copilot-label">AI Copilot</span>
             <span class="copilot-badge-live">LIVE</span>
-            <kbd class="copilot-kbd">C</kbd>
         </button>
 
         <!-- Floating Chat Assistant Window -->
@@ -1430,7 +1428,7 @@
                     </button>
                 </div>
                 <div class="copilot-input-footer">
-                    <span>Press <kbd>Enter</kbd> to send • Click any transaction ID to inspect</span>
+                    <span>Press Enter to send • Click any transaction ID to inspect</span>
                 </div>
             </form>
         </div>
@@ -1438,10 +1436,9 @@
 
     <!-- FLOATING JUDGE QUICK NAVIGATOR DOCK -->
     <div id="judgeQuickNavDock" class="judge-quick-dock">
-        <button class="dock-toggle-btn" id="btnToggleQuickDock" title="Toggle Quick Demo Navigator (Press 'D')">
+        <button class="dock-toggle-btn" id="btnToggleQuickDock" title="Toggle Quick Demo Navigator">
             <span class="dock-icon">🎯</span>
             <span class="dock-label">Judge Tour</span>
-            <kbd class="dock-kbd">D</kbd>
         </button>
         <div class="dock-panel" id="judgeDockPanel">
             <div class="dock-header">
@@ -1467,6 +1464,6 @@
         </div>
     </div>
 
-    <script src="/static/app.js?v=ai_decision_center_v1"></script>
+    <script src="/static/app.js?v=no_shortcuts_v2"></script>
 </body>
 </html>
