@@ -357,25 +357,12 @@ function formatCurrency(amount) {
 function formatCustomerName(tx) {
     if (!tx) return "Harshit Pal";
     let name = typeof tx === "string" ? tx : (tx.customer_name || "");
-    const phone = typeof tx === "object" ? String(tx.customer_phone || "").replace(/\D/g, "") : "";
     const email = typeof tx === "object" ? String(tx.customer_email || "") : "";
 
     // Check if name is missing, dummy, or unwanted placeholder
     if (!name || name.startsWith("Customer (•••") || name === "void@razorpay.com" || name === "null" || name === "undefined" || name.includes("@razorpay.com") || name === "Razorpay Customer" || name === "Razorpay Test Customer") {
-        if (phone.includes("6306681521") || phone.includes("9123422343") || phone.includes("9876543210") || phone.endsWith("2343")) {
-            return "Harshit Pal";
-        }
         if (email && !email.includes("razorpay.com") && email.includes("@")) {
             return email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, l => l.toUpperCase());
-        }
-        if (typeof tx === "object" && tx.transaction_id) {
-            const names = [
-                "Harshit Pal", "Aarav Sharma", "Pooja Malhotra", "Rohan Verma",
-                "Vikram Singhania", "Aditya Sen", "Neha Kapoor", "Kavita Reddy", "Ishaan Joshi"
-            ];
-            let hash = 0;
-            for (let i = 0; i < tx.transaction_id.length; i++) hash = (hash * 31 + tx.transaction_id.charCodeAt(i)) >>> 0;
-            return names[hash % names.length];
         }
         return "Harshit Pal";
     }

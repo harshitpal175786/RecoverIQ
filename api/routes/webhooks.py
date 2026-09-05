@@ -109,25 +109,13 @@ async def razorpay_webhook(
                     if len(vpa_handle) > 2 and not any(char.isdigit() for char in vpa_handle):
                         cust_name = vpa_handle
             
-            # If still not resolved, derive clean name from contact/email or assign developer/realistic name
+            # If still not resolved, derive clean name from contact/email or default to Harshit Pal
             if not cust_name:
                 email = payment_entity.get("email") or ""
-                contact = str(payment_entity.get("contact") or "").strip()
-                clean_phone = "".join(filter(str.isdigit, contact))
-                
-                # Check for test merchant / developer test numbers
-                if "6306681521" in clean_phone or "9123422343" in clean_phone or "9876543210" in clean_phone or clean_phone.endswith("2343"):
-                    cust_name = "Harshit Pal"
-                elif email and "void@razorpay.com" not in email and "@razorpay.com" not in email:
+                if email and "void@razorpay.com" not in email and "@razorpay.com" not in email:
                     cust_name = email.split("@")[0].replace(".", " ").replace("_", " ").title()
                 else:
-                    # Provide an authentic, realistic customer name rather than an unformatted placeholder
-                    indian_names = [
-                        "Harshit Pal", "Aarav Sharma", "Pooja Malhotra", "Rohan Verma",
-                        "Vikram Singhania", "Aditya Sen", "Neha Kapoor", "Kavita Reddy", "Ishaan Joshi"
-                    ]
-                    h = sum(ord(c) for c in tx_id)
-                    cust_name = indian_names[h % len(indian_names)]
+                    cust_name = "Harshit Pal"
 
             now_local = datetime.now()
             tx = Transaction(
