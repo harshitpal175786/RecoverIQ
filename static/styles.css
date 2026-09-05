@@ -1181,12 +1181,31 @@ code, kbd, samp, pre {
     height: 100vh;
     background: rgba(15, 23, 42, 0.45);
     backdrop-filter: blur(3px);
-    z-index: 200;
+    z-index: 500;
     display: flex;
     justify-content: flex-end;
     opacity: 0;
     visibility: hidden;
     transition: opacity var(--transition-smooth), visibility var(--transition-smooth);
+}
+
+/* Hide floating navigator dock and copilot trigger when inspection drawer or modal is active */
+body.drawer-open #judgeQuickNavDock,
+body.drawer-open .judge-quick-dock,
+body.drawer-open .ai-copilot-widget,
+#txDrawer.open ~ #judgeQuickNavDock,
+#txDrawer.open ~ .judge-quick-dock,
+#txDrawer.open ~ .ai-copilot-widget,
+.drawer-overlay.open ~ #judgeQuickNavDock,
+.drawer-overlay.open ~ .judge-quick-dock,
+.drawer-overlay.open ~ .ai-copilot-widget,
+.modal-overlay.open ~ #judgeQuickNavDock,
+.modal-overlay.open ~ .judge-quick-dock,
+.modal-overlay.open ~ .ai-copilot-widget {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(16px) !important;
+    transition: opacity 0.25s ease, transform 0.25s ease !important;
 }
 
 .drawer-overlay.open {
@@ -1204,6 +1223,8 @@ code, kbd, samp, pre {
     flex-direction: column;
     transform: translateX(100%);
     transition: transform var(--transition-smooth);
+    position: relative;
+    z-index: 501;
 }
 
 .drawer-overlay.open .drawer-content {
@@ -1241,6 +1262,7 @@ code, kbd, samp, pre {
 
 .drawer-body {
     padding: 24px;
+    padding-bottom: 48px;
     overflow-y: auto;
     flex: 1;
 }
