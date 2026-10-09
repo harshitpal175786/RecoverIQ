@@ -1,5 +1,4 @@
-# RecoverIQ — Autonomous AI Revenue Recovery Agent
-> **Razorpay Buildathon 2026 Submission**  
+# RecoverIQ — Autonomous AI Revenue Recovery Agent 
 > *Transforming failed transactions into recovered revenue with autonomous agents, deterministic guardrails, and an intelligent control room.*
 
 [![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-blue.svg)](https://www.python.org/downloads/)
