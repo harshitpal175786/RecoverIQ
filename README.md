@@ -442,7 +442,6 @@ RecoverIQ/
 ## ⚖️ License & Acknowledgements
 
 - **License**: Distributed under the [MIT License](LICENSE).
-- **Built for**: [Razorpay Buildathon 2026](https://razorpay.com).
 - **Author**: Harshit ([@harshitpal175786](https://github.com/harshitpal175786))
 
 ---
